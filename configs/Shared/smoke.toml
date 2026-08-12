@@ -1,0 +1,18 @@
+config_version = "smoke-v1"
+corpus_version = "fixture-v1"
+rrf_k = 60
+default_top_k = 5
+
+[chunking]
+max_sentences = 2
+
+[limits]
+max_query_characters = 1000
+max_candidates_per_retriever = 20
+max_agent_steps = 2
+max_evidence_chunks = 3
+
+[agent]
+allow_llm = false
+fallback = "extractive"
+abstain_without_evidence = true

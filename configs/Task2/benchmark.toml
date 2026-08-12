@@ -1,0 +1,21 @@
+config_version = "task2-benchmark-v1"
+task = "LegalQA"
+official_metric = "pending-organizer-specification"
+local_diagnostics = ["citation_support", "abstention", "latency_ms", "failure_rate"]
+
+[retrieval]
+source = "Task1"
+max_evidence_chunks = 5
+require_active_corpus_version = true
+
+[answer]
+fallback = "extractive"
+generator_enabled = false
+primary_generator = "Qwen/Qwen2.5-1.5B-Instruct"
+rag_challenger = "AITeamVN/Vi-Qwen2-1.5B-RAG"
+max_agent_steps = 2
+abstain_without_evidence = true
+
+[hardware]
+profile = "rtx-2050-4gb"
+run_models_sequentially = true

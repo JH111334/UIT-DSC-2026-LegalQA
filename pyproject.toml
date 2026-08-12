@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dsc-tindiplapo"
+version = "0.1.0"
+description = "Governed UIT DSC LegalIR and LegalQA competition baseline."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "TinDipLaPo" }]
+keywords = ["legal-information-retrieval", "legal-question-answering", "vietnamese", "dsc"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = []
+
+[project.scripts]
+dsc = "text_retrieval_agent.cli:main"
+dsc-warmup = "text_retrieval_agent.warmup:main"
+
+[dependency-groups]
+dev = [
+  "mypy>=1.17,<2",
+  "pytest>=8.4,<9",
+  "pytest-cov>=6.2,<8",
+  "ruff>=0.12,<1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "Source/Shared/text_retrieval_agent",
+  "Source/Task1/legal_ir",
+  "Source/Task2/legal_qa",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q --strict-markers --disable-warnings --cov-fail-under=90"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["legal_ir", "legal_qa", "text_retrieval_agent"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["Source", "tests"]

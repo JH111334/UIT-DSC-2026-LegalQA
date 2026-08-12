@@ -1,0 +1,23 @@
+config_version = "task1-benchmark-v1"
+task = "LegalIR"
+official_metric = "pending-organizer-specification"
+local_diagnostics = ["macro_f2", "recall_at_k", "mrr", "ndcg_at_k", "latency_ms"]
+
+[candidate_generation]
+sparse = ["bm25", "tfidf"]
+dense_model = "AITeamVN/Vietnamese_Embedding_v2"
+dense_enabled = false
+candidate_k = 100
+
+[fusion]
+method = "rrf"
+preserve_component_scores = true
+
+[reranking]
+model = "AITeamVN/Vietnamese_Reranker"
+enabled = false
+rerank_k = 30
+
+[hardware]
+profile = "rtx-2050-4gb"
+run_models_sequentially = true

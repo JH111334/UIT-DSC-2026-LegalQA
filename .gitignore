@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+env/
+__pypackages__/
+
+# Build, test, and tooling
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.hypothesis/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.ipynb_checkpoints/
+
+# Secrets and local files
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Organizer/private data; retain only local copies
+/Data/Task1/warmup_data/*
+!/Data/Task1/warmup_data/README.md
+!/Data/Task1/warmup_data/manifest.json
+/Data/Task2/warmup_data/*
+!/Data/Task2/warmup_data/README.md
+!/Data/Task2/warmup_data/manifest.json
+/Data/**/raw/
+/Data/**/indexes/
+
+# Generated retrieval and model artifacts
+/models/
+/artifacts/
+/checkpoints/
+/experiments/*/runs/
+/submissions/*/outputs/
+/.cache/
+*.ckpt
+*.onnx
+*.pt
+*.pth
+
+# Rendered documents remain local
+/Documents/**/*.docx
+/Documents/**/*.pdf
+/Documents/**/rendered/

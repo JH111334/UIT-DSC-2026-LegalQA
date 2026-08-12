@@ -1,0 +1,13 @@
+{
+  "manifest_version": "warmup-manifest-v1",
+  "task": "Task1-LegalIR",
+  "file": "warmup_Task1.json",
+  "source_uri": "https://drive.google.com/drive/folders/13FimbavEhVcSWHcNQ8fSiWyfZxIwlkKA?usp=sharing",
+  "source_class": "organizer_resource_supplied_by_user",
+  "git_policy": "local-only",
+  "records": 500,
+  "unique_questions": 500,
+  "unique_document_labels": 426,
+  "labels_per_query_max": 4,
+  "sha256": "fadfbcab2923c085980239396d5564c16c232714f42004a36ed2a3d93962c0f9"
+}
