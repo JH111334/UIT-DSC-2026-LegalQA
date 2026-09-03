@@ -1,0 +1,32 @@
+seed: 2026
+
+data:
+  data_dir: Data/Task2
+  train_file: train.json
+  test_file: public-official.json
+  contexts_path: selected-contexts
+  artifacts_dir: Data/Task2/work/preprocessing
+
+audit:
+  very_long_chars: 200000
+  extreme_chars: 1000000
+  min_structure_density_per_10k: 0.25
+  near_duplicate_enabled: true
+  near_duplicate_threshold: 0.94
+  near_duplicate_num_perm: 64
+
+sanitation:
+  enabled: false
+
+chunking:
+  legal_aware: true
+  max_chars: 1800
+  overlap_chars: 220
+  min_chars: 60
+  preamble_chars: 1400
+
+diagnostic:
+  enabled: true
+  allow_training_use: false
+  manual_sample_size: 150
+  seed: 2026

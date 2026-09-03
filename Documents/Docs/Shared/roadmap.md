@@ -1,25 +1,29 @@
-# Roadmap
+# Roadmap — competition execution và chuyển giao
 
-## P0 — Completed smoke baseline
+## P0 — Deterministic smoke baseline đã triển khai
 
-- Versioned corpus and deterministic chunks.
-- Access-scoped BM25 and TF-IDF.
-- RRF, bounded routes, citations, abstention, evaluation, and CI.
+- Stable chunks, access-scoped BM25/TF-IDF, RRF, extractive evidence và abstention.
+- Fixture/unit tests chỉ chứng minh contract, chưa phải competition-quality score.
 
-## P1 — Multilingual semantic retrieval
+## P0.5 — Task 2 preprocessing và first trained run
 
-- Sentence Transformer adapter with model and preprocessing version.
-- Exact dense-search conformance and BEIR-style evaluation slice.
-- Cross-encoder rerank over bounded top-k with latency and ablation.
+- Freeze Task 2-only raw checksum, schema, split, tokenizer report và submission contract.
+- Xây validate → preprocess → train smoke → predict → score → package.
+- Chạy Qwen2.5-1.5B anchor và giữ run manifest/error table.
 
-## P2 — Agent reliability
+## P1 — Task challengers
 
-- Structured query analyzer and tested route registry.
-- LLM answer adapter restricted to allowed citation IDs.
-- Prompt-injection, contradiction, timeout, and malformed-output tests.
+- Task 1: dense encoder rồi bounded reranker, từng stage paired với BM25/RRF.
+- Task 2: direct generator; Qwen2.5-1.5B anchor rồi ViLegalQwen3-1.7B-Base SFT.
+- Một thay đổi chính mỗi run; giữ last-known-good.
 
-## P3 — Serving and product
+## P2 — Integration và rehearsal
 
-- FastAPI service, streaming-independent response contract, and audit events.
-- Immutable index releases, health/readiness, observability, and Docker.
-- Evidence-first UI with source preview, filters, feedback, and trace inspection.
+- Tách tuyệt đối artifact hai task, resource budget, packaging và clean-environment replay.
+- Freeze submission candidate trước deadline; chỉ nhận fix có regression evidence.
+
+## P3 — Postmortem và transfer
+
+- Lưu failure taxonomy, rejected hypotheses và reproducible artifacts.
+- Chỉ chuyển pattern bền sang Text Asset Retrieval capstone; không chuyển organizer data,
+  score objective hoặc submission-specific code vào product core.

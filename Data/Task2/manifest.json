@@ -1,0 +1,24 @@
+{
+  "manifest_version": "task2-official-manifest-v1",
+  "task": "Task2-LegalQA",
+  "source_class": "organizer_official_data_supplied_by_user",
+  "git_policy": "local-only",
+  "files": {
+    "train.json": {
+      "records": 7000,
+      "unique_questions": 6983,
+      "sha256": "2a52501cc065d266f2f832475950bcf1e7c75c386efa9b2f568f251d745f5988"
+    },
+    "public-official.json": {
+      "records": 1000,
+      "unique_questions": 1000,
+      "sha256": "5f68ca901cb20798559538bef60fa7c32bd7d0df59f5bf31a37eb220c9e00df5"
+    }
+  },
+  "constraints": {
+    "cross_task_data_allowed": false,
+    "external_data_allowed": false,
+    "augmentation_allowed": false,
+    "total_parameter_limit_exclusive": 4000000000
+  }
+}

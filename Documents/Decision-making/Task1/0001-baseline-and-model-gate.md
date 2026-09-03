@@ -13,6 +13,9 @@ Reasons:
 - Vietnamese legal prior art favors hybrid retrieval and reranking, but transfer to
   UIT DSC is unproven.
 
-Promotion gate: same split/corpus/config; positive Macro-F2 and recall delta; no ID
-or access leak; acceptable p95 latency and peak memory. Official BTC metric overrides
-the provisional local diagnostic.
+Promotion gate: same split/corpus/config; Macro Recall không giảm và Macro Precision
+cải thiện khi Recall bằng nhau; không ID/access leak; p95 latency và peak memory
+chấp nhận được. Mỗi submission trả tối đa 5 unique document ID.
+
+Task 1 train phải gắn cờ passage rỗng, nhóm passage trùng và chia split theo nhóm.
+Toàn hệ thống nhỏ hơn 4 tỷ tham số và không gọi API.

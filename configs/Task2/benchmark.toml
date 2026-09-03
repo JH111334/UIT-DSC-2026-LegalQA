@@ -1,21 +1,49 @@
-config_version = "task2-benchmark-v1"
+config_version = "task2-benchmark-v5-accepted"
 task = "LegalQA"
-official_metric = "pending-organizer-specification"
-local_diagnostics = ["citation_support", "abstention", "latency_ms", "failure_rate"]
+official_metric = "meteor"
+official_secondary_metric = "rouge_l"
+local_diagnostics = ["meteor", "rouge_l", "empty_rate", "truncation_rate", "latency_ms"]
 
-[retrieval]
-source = "Task1"
-max_evidence_chunks = 5
-require_active_corpus_version = true
+[data]
+source = "Task2_only"
+cross_task_data_allowed = false
+external_data_allowed = false
+augmentation_allowed = false
+preserve_answer_newlines = true
+normalize_unicode = "NFC"
+
+[scoring]
+implementation = "pending_exact_organizer_scorer"
+checkpoint_selection = ["meteor", "rouge_l"]
+
+[training]
+execution = "local_or_team_controlled_offline"
+answer_only_loss = true
+length_bucketed_batches = true
+run_models_sequentially = true
 
 [answer]
-fallback = "extractive"
-generator_enabled = false
+generator_enabled = true
 primary_generator = "Qwen/Qwen2.5-1.5B-Instruct"
-rag_challenger = "AITeamVN/Vi-Qwen2-1.5B-RAG"
-max_agent_steps = 2
-abstain_without_evidence = true
+primary_generator_revision = "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+legal_base_challenger = "ntphuc149/ViLegalQwen3-1.7B-Base"
+deterministic_decoding = true
+submission_language = "vi"
+
+[retrieval]
+enabled = true
+profile = "e1-bm25"
+corpus_source = "Task2_selected_contexts_only"
+reuse_task1_runtime = false
+adr_status = "accepted"
+qrels_role = "diagnostic_proxy"
+dense_model = "not_selected"
+neural_retrieval_target = "hybrid_bm25_dense_rrf"
+dense_only_role = "diagnostic_ablation"
+citation_graph_enabled = false
+citation_graph_policy = "optional_after_hybrid_and_relation_failure_gate"
 
 [hardware]
 profile = "rtx-2050-4gb"
 run_models_sequentially = true
+total_parameter_limit_exclusive = 4000000000

@@ -3,7 +3,7 @@
 | Branch | Owner scope | Merge gate |
 |---|---|---|
 | `Task1-LegalIR` | ingestion, chunking, retrieval, reranking | retrieval metrics and ID integrity |
-| `Task2-LegalQA` | answer contracts, evidence, abstention | citation support and failure tests |
+| `Task2-LegalQA` | Task 2-only preprocessing, training, decoding | METEOR/ROUGE-L và output integrity |
 | `Data-Evaluation` | manifests, splits, qrels, evaluation | leakage check and reproducibility |
 | `Integration-Submission` | configs, packaging, submission checks | clean-environment end-to-end run |
 

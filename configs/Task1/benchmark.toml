@@ -1,7 +1,17 @@
-config_version = "task1-benchmark-v1"
+config_version = "task1-benchmark-v2"
 task = "LegalIR"
-official_metric = "pending-organizer-specification"
-local_diagnostics = ["macro_f2", "recall_at_k", "mrr", "ndcg_at_k", "latency_ms"]
+official_metric = "macro_recall"
+official_tie_breaker = "macro_precision"
+max_predicted_document_ids = 5
+local_diagnostics = ["recall", "precision", "recall_at_k", "mrr", "ndcg_at_k", "latency_ms"]
+
+[data]
+source = "Task1_only"
+cross_task_data_allowed = false
+external_data_allowed = false
+augmentation_allowed = false
+drop_empty_train_passages = true
+deduplicate_train_passages = true
 
 [candidate_generation]
 sparse = ["bm25", "tfidf"]
@@ -21,3 +31,4 @@ rerank_k = 30
 [hardware]
 profile = "rtx-2050-4gb"
 run_models_sequentially = true
+total_parameter_limit_exclusive = 4000000000

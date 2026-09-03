@@ -1,11 +1,11 @@
 # Evaluation
 
-## Current gate
+## Current fixture gate
 
 The committed corpus is project-generated and validates behavior, not domain quality.
 
 ```powershell
-uv run egta evaluate --top-k 3
+uv run dsc evaluate --top-k 3
 ```
 
 Acceptance:
@@ -16,17 +16,21 @@ Acceptance:
 - internal content is absent from public candidates and answers;
 - agent tool calls and evidence items remain bounded.
 
-## Production evaluation
+Các acceptance trên chỉ là synthetic fixture, không phải metric DSC.
+
+## Competition evaluation
 
 Freeze the corpus, chunker version, query set, qrels, access policy, configuration,
 and Git revision. Report:
 
-- Recall@k, MRR, and nDCG@k by language, domain, and query type;
+- Task 1 Macro Recall chính, Macro Precision tie-break, cùng Recall@k/MRR/nDCG
+  diagnostic và contract tối đa 5 ID;
 - hybrid delta against BM25 and dense retrieval separately;
-- citation precision, citation coverage, and unsupported-claim rate;
-- answerable/unanswerable precision and abstention accuracy;
+- Task 2 METEOR chính, ROUGE-L phụ, exact scorer parity và case/slice delta;
+- empty output, truncation, repetition và cấu trúc Điều/Khoản;
 - scope-leak test count and prompt-injection resistance;
 - p50/p95 retrieval, rerank, and answer latency;
 - cost and failure rate for every optional model adapter.
 
-LLM output quality must never hide a retrieval miss or unauthorized source.
+Không dùng metric Task 1 cho Task 2 hoặc ngược lại. Local scorer không được gọi là
+official nếu chưa khớp implementation của BTC.

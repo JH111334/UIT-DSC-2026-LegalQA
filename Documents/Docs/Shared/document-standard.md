@@ -20,3 +20,9 @@
 Build from reviewed Markdown; apply compact heading/table styles; render to PDF;
 inspect pagination, clipped text, fonts, and tables before delivery. A generated file
 without structural and rendered QA is not complete.
+
+<!-- BEGIN research-refinement:v1 -->
+## Chuẩn viết refine
+
+Viết tiếng Việt có dấu, viết hoa đầu câu, dùng câu ngắn và nguồn gần mệnh đề. Không chép debug narrative. Tài liệu lịch sử và General logs bất biến; tạo version mới theo RULE.md.
+<!-- END research-refinement:v1 -->

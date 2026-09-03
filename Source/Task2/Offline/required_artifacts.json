@@ -1,0 +1,768 @@
+{
+  "schema_version": "task2-training-gate-v2",
+  "task_id": "Task2",
+  "profiles": ["e0-direct", "e1-bm25"],
+  "requirements": {
+    "tokenizer": {
+      "e0-direct": ["qa_core", "tokenizer_controls"]
+    },
+    "indexing": {
+      "e1-bm25": ["corpus_release", "diagnostic_release", "index_build_controls"]
+    },
+    "training": {
+      "e0-direct": ["qa_core", "training_controls"]
+    },
+    "evaluation": {
+      "e0-direct": ["qa_core", "training_controls", "decoding_controls", "evaluation_run"],
+      "e1-bm25": [
+        "qa_core",
+        "corpus_release",
+        "diagnostic_release",
+        "training_controls",
+        "decoding_controls",
+        "evaluation_run",
+        "e1_index"
+      ]
+    },
+    "public": {
+      "e0-direct": [
+        "public_release",
+        "training_controls",
+        "decoding_controls",
+        "prediction_run",
+        "validated_run",
+        "public_controls"
+      ],
+      "e1-bm25": [
+        "public_release",
+        "corpus_release",
+        "training_controls",
+        "decoding_controls",
+        "prediction_run",
+        "validated_run",
+        "e1_index",
+        "public_controls"
+      ]
+    },
+    "private": {
+      "e0-direct": [
+        "private_release",
+        "training_controls",
+        "decoding_controls",
+        "prediction_run",
+        "validated_run",
+        "private_controls"
+      ],
+      "e1-bm25": [
+        "private_release",
+        "corpus_release",
+        "training_controls",
+        "decoding_controls",
+        "prediction_run",
+        "validated_run",
+        "e1_index",
+        "private_controls"
+      ]
+    }
+  },
+  "groups": {
+    "qa_core": [
+      "release_manifest",
+      "data_report",
+      "leakage_report",
+      "split_manifest",
+      "qa_train",
+      "qa_validation"
+    ],
+    "corpus_release": [
+      "release_manifest",
+      "corpus_manifest",
+      "raw_inventory",
+      "corpus_documents",
+      "corpus_chunks",
+      "corpus_quarantine",
+      "corpus_report"
+    ],
+    "diagnostic_release": [
+      "release_manifest",
+      "citation_qrels",
+      "citation_match_report"
+    ],
+    "public_release": ["release_manifest", "qa_public", "public_manifest"],
+    "private_release": ["release_manifest", "qa_private", "private_manifest"],
+    "base_approvals": [
+      "architecture_approval",
+      "preprocess_release_approval",
+      "environment_decision"
+    ],
+    "tokenizer_controls": [
+      "architecture_approval",
+      "preprocess_release_approval",
+      "environment_decision",
+      "model_snapshot_manifest",
+      "training_config"
+    ],
+    "index_build_controls": [
+      "architecture_approval",
+      "preprocess_release_approval",
+      "environment_decision"
+    ],
+    "training_controls": [
+      "architecture_approval",
+      "preprocess_release_approval",
+      "environment_decision",
+      "model_snapshot_manifest",
+      "tokenizer_report",
+      "training_config",
+      "scorer_contract"
+    ],
+    "decoding_controls": ["decoding_config"],
+    "evaluation_run": ["run_manifest", "checkpoint_manifest"],
+    "prediction_run": ["run_manifest", "checkpoint_manifest"],
+    "validated_run": ["validation_predictions", "validation_metrics"],
+    "e1_index": ["index_manifest"],
+    "public_controls": ["public_phase_approval", "submission_contract"],
+    "private_controls": ["private_phase_approval", "submission_contract"]
+  },
+  "artifacts": {
+    "release_manifest": {
+      "root": "release",
+      "path": "manifest.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "raw_sources",
+        "artifacts",
+        "transform_version",
+        "split_version",
+        "parser_version"
+      ],
+      "expected": {"task_id": "Task2", "status": "READY"}
+    },
+    "data_report": {
+      "root": "release",
+      "path": "data_report.json",
+      "kind": "json",
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "raw_counts",
+        "processed_counts",
+        "empty_counts",
+        "duplicate_counts",
+        "normalization",
+        "newline_preservation",
+        "source_checksums",
+        "transform_version"
+      ],
+      "expected": {"task_id": "Task2", "status": "PASS"}
+    },
+    "leakage_report": {
+      "root": "release",
+      "path": "leakage_report.json",
+      "kind": "json",
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "exact_duplicate_groups",
+        "near_duplicate_method",
+        "suspicious_pairs",
+        "cross_task_hits",
+        "public_label_usage",
+        "private_label_usage",
+        "thresholds"
+      ],
+      "expected": {
+        "task_id": "Task2",
+        "status": "PASS",
+        "cross_task_hits": 0,
+        "public_label_usage": 0,
+        "private_label_usage": 0
+      }
+    },
+    "split_manifest": {
+      "root": "release",
+      "path": "split_manifest.json",
+      "kind": "json",
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "seed",
+        "method",
+        "train_ids_sha256",
+        "validation_ids_sha256",
+        "train_groups_sha256",
+        "validation_groups_sha256",
+        "counts",
+        "overlap"
+      ],
+      "expected": {"task_id": "Task2", "status": "PASS", "method": "group-aware"}
+    },
+    "qa_train": {
+      "root": "release",
+      "path": "qa/train.jsonl",
+      "kind": "jsonl",
+      "record_required_keys": [
+        "question_id",
+        "source_task",
+        "question_raw",
+        "answer_raw",
+        "question_model",
+        "answer_model",
+        "question_group",
+        "split",
+        "source_sha256",
+        "transform_version"
+      ],
+      "record_expected": {"source_task": "Task2", "split": "train"}
+    },
+    "qa_validation": {
+      "root": "release",
+      "path": "qa/validation.jsonl",
+      "kind": "jsonl",
+      "record_required_keys": [
+        "question_id",
+        "source_task",
+        "question_raw",
+        "answer_raw",
+        "question_model",
+        "answer_model",
+        "question_group",
+        "split",
+        "source_sha256",
+        "transform_version"
+      ],
+      "record_expected": {"source_task": "Task2", "split": "validation"}
+    },
+    "tokenizer_report": {
+      "root": "control",
+      "path": "tokenizer/tokenizer_report_qwen.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "model_id",
+        "model_revision",
+        "tokenizer_revision",
+        "tokenizer_files_sha256",
+        "prompt_version",
+        "question_tokens",
+        "target_tokens",
+        "retrieval_chunk_tokens",
+        "packed_context_tokens",
+        "total_sequence_tokens",
+        "candidate_max_lengths",
+        "truncation_counts",
+        "candidate_max_new_tokens",
+        "target_truncation_counts",
+        "sample_ids"
+      ],
+      "expected": {"task_id": "Task2", "status": "PASS"}
+    },
+    "corpus_manifest": {
+      "root": "release",
+      "path": "corpus/corpus_manifest.json",
+      "kind": "json",
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "raw_inventory_sha256",
+        "document_count",
+        "chunk_count",
+        "source_checksums",
+        "parser_version",
+        "transform_version",
+        "artifacts"
+      ],
+      "expected": {"task_id": "Task2", "status": "READY"}
+    },
+    "raw_inventory": {
+      "root": "release",
+      "path": "corpus/raw_inventory.jsonl",
+      "kind": "jsonl",
+      "record_required_keys": [
+        "doc_id",
+        "relative_path",
+        "source_task",
+        "sha256",
+        "bytes",
+        "json_valid"
+      ],
+      "record_expected": {"source_task": "Task2", "json_valid": true}
+    },
+    "corpus_documents": {
+      "root": "release",
+      "path": "corpus/documents.jsonl",
+      "kind": "jsonl",
+      "record_required_keys": [
+        "doc_id",
+        "source_task",
+        "name_raw",
+        "name_derived",
+        "name_source",
+        "link_raw",
+        "passage_raw",
+        "source_sha256",
+        "status",
+        "indexable",
+        "quality_flags",
+        "transform_version"
+      ],
+      "record_expected": {"source_task": "Task2"}
+    },
+    "corpus_chunks": {
+      "root": "release",
+      "path": "corpus/chunks.jsonl",
+      "kind": "jsonl",
+      "record_required_keys": [
+        "chunk_id",
+        "doc_id",
+        "source_task",
+        "parent_chunk_id",
+        "doc_type",
+        "doc_number_surface",
+        "doc_number_canonical",
+        "chapter",
+        "article",
+        "clause",
+        "point",
+        "raw_text",
+        "canonical_text",
+        "retrieval_text",
+        "parent_text",
+        "source_sha256",
+        "source_start",
+        "source_end",
+        "parser_version",
+        "transform_version",
+        "indexable",
+        "quality_flags"
+      ],
+      "record_expected": {"source_task": "Task2"}
+    },
+    "corpus_quarantine": {
+      "root": "release",
+      "path": "corpus/quarantine.jsonl",
+      "kind": "jsonl",
+      "allow_empty": true,
+      "record_required_keys": [
+        "doc_id",
+        "reason",
+        "source_sha256",
+        "included_in_index",
+        "review_status"
+      ],
+      "record_expected": {"included_in_index": false}
+    },
+    "corpus_report": {
+      "root": "release",
+      "path": "corpus/corpus_report.json",
+      "kind": "json",
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "documents_total",
+        "documents_indexable",
+        "documents_non_indexable",
+        "non_indexable_by_reason",
+        "empty_passages",
+        "missing_names",
+        "length_outliers",
+        "exact_duplicate_groups",
+        "near_duplicate_groups",
+        "docs_with_articles",
+        "orphan_text_ratio",
+        "unparsed_ratio",
+        "parse_failures",
+        "chunk_count",
+        "chunks_indexable",
+        "chunk_level_counts",
+        "orphan_parent_count",
+        "source_span_failures",
+        "empty_retrieval_text",
+        "chunk_token_stats",
+        "artifact_sizes_bytes",
+        "quarantine_count"
+      ],
+      "expected": {"task_id": "Task2", "status": "PASS"}
+    },
+    "citation_qrels": {
+      "root": "release",
+      "path": "diagnostics/citation_qrels.jsonl",
+      "kind": "jsonl",
+      "record_required_keys": [
+        "question_id",
+        "chunk_id",
+        "relevance",
+        "confidence",
+        "match_reason",
+        "qrels_status",
+        "citation_parser_version",
+        "matcher_version"
+      ],
+      "record_expected": {"qrels_status": "diagnostic_proxy"}
+    },
+    "citation_match_report": {
+      "root": "release",
+      "path": "diagnostics/citation_match_report.json",
+      "kind": "json",
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "qrels_status",
+        "parser_version",
+        "matcher_version",
+        "answers_scanned",
+        "answers_with_citations",
+        "questions_with_matches",
+        "qrel_pairs_unique",
+        "matched_high",
+        "matched_medium",
+        "matched_low",
+        "unmatched",
+        "ambiguous",
+        "judged_coverage",
+        "judged_coverage_basis",
+        "confidence_counts",
+        "manual_audit_target",
+        "manual_audit_completed",
+        "manual_audit_status",
+        "unjudged_policy"
+      ],
+      "expected": {
+        "task_id": "Task2",
+        "status": "PASS",
+        "qrels_status": "diagnostic_proxy"
+      }
+    },
+    "qa_public": {
+      "root": "release",
+      "path": "qa/public.jsonl",
+      "kind": "jsonl",
+      "record_required_keys": [
+        "question_id",
+        "source_task",
+        "question_raw",
+        "question_model",
+        "split",
+        "source_sha256",
+        "transform_version"
+      ],
+      "record_forbidden_keys": ["answer", "answer_raw", "answer_model"],
+      "record_expected": {"source_task": "Task2", "split": "public"}
+    },
+    "public_manifest": {
+      "root": "release",
+      "path": "qa/public_manifest.json",
+      "kind": "json",
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "phase",
+        "source_sha256",
+        "records",
+        "ids_sha256",
+        "answer_visibility",
+        "transform_version",
+        "artifact_sha256"
+      ],
+      "expected": {
+        "task_id": "Task2",
+        "status": "READY",
+        "phase": "public",
+        "answer_visibility": "hidden"
+      }
+    },
+    "qa_private": {
+      "root": "release",
+      "path": "qa/private.jsonl",
+      "kind": "jsonl",
+      "record_required_keys": [
+        "question_id",
+        "source_task",
+        "question_raw",
+        "question_model",
+        "split",
+        "source_sha256",
+        "transform_version"
+      ],
+      "record_forbidden_keys": ["answer", "answer_raw", "answer_model"],
+      "record_expected": {"source_task": "Task2", "split": "private"}
+    },
+    "private_manifest": {
+      "root": "release",
+      "path": "qa/private_manifest.json",
+      "kind": "json",
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "release_id",
+        "status",
+        "phase",
+        "source_sha256",
+        "records",
+        "ids_sha256",
+        "answer_visibility",
+        "transform_version",
+        "artifact_sha256"
+      ],
+      "expected": {
+        "task_id": "Task2",
+        "status": "READY",
+        "phase": "private",
+        "answer_visibility": "hidden"
+      }
+    },
+    "architecture_approval": {
+      "root": "control",
+      "path": "approvals/architecture_approval.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": ["schema_version", "task_id", "status", "adr_id", "approved_by"],
+      "expected": {"task_id": "Task2", "status": "APPROVED"}
+    },
+    "preprocess_release_approval": {
+      "root": "control",
+      "path": "approvals/preprocess_release_approval.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "release_id",
+        "release_manifest_sha256",
+        "preflight_report_sha256",
+        "approved_by"
+      ],
+      "expected": {"task_id": "Task2", "status": "APPROVED"}
+    },
+    "environment_decision": {
+      "root": "control",
+      "path": "approvals/environment_decision.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "environment",
+        "python_version",
+        "torch_build",
+        "dependency_lock_sha256",
+        "api_inference",
+        "approved_by"
+      ],
+      "expected": {"task_id": "Task2", "status": "APPROVED", "api_inference": false}
+    },
+    "model_snapshot_manifest": {
+      "root": "control",
+      "path": "model/model_snapshot_manifest.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "model_id",
+        "model_revision",
+        "tokenizer_revision",
+        "parameter_count",
+        "license",
+        "snapshot_path",
+        "snapshot_files"
+      ],
+      "expected": {"task_id": "Task2", "status": "READY"}
+    },
+    "training_config": {
+      "root": "control",
+      "path": "training/training_config.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "profile",
+        "seed",
+        "answer_only_loss",
+        "prompt_version",
+        "run_mode",
+        "max_sequence_length",
+        "max_new_tokens"
+      ],
+      "expected": {"task_id": "Task2", "status": "APPROVED", "answer_only_loss": true}
+    },
+    "decoding_config": {
+      "root": "control",
+      "path": "inference/decoding_config.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "decode_id",
+        "deterministic",
+        "do_sample",
+        "max_new_tokens",
+        "evidence_status"
+      ],
+      "expected": {
+        "task_id": "Task2",
+        "status": "APPROVED",
+        "deterministic": true,
+        "do_sample": false
+      }
+    },
+    "scorer_contract": {
+      "root": "control",
+      "path": "scorer/scorer_contract.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "implementation",
+        "version",
+        "metric_order",
+        "parity_status",
+        "golden_cases_sha256"
+      ],
+      "expected": {"task_id": "Task2"}
+    },
+    "run_manifest": {
+      "root": "run",
+      "path": "run_manifest.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "run_id",
+        "profile",
+        "status",
+        "data_release_id",
+        "data_manifest_sha256",
+        "model_revision",
+        "config_sha256",
+        "code_revision",
+        "seed"
+      ],
+      "expected": {"task_id": "Task2", "status": "READY"}
+    },
+    "checkpoint_manifest": {
+      "root": "run",
+      "path": "checkpoint_manifest.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "base_model_id",
+        "base_model_revision",
+        "checkpoint_sha256",
+        "adapter_type"
+      ],
+      "expected": {"task_id": "Task2", "status": "READY"}
+    },
+    "validation_predictions": {
+      "root": "run",
+      "path": "validation_predictions.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": []
+    },
+    "validation_metrics": {
+      "root": "run",
+      "path": "metrics.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "metric_status",
+        "evaluated_pairs",
+        "meteor",
+        "rouge_l",
+        "empty_rate",
+        "error_counts"
+      ],
+      "expected": {"task_id": "Task2", "status": "PASS"}
+    },
+    "index_manifest": {
+      "root": "run",
+      "path": "index/index_manifest.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "index_id",
+        "index_type",
+        "corpus_manifest_sha256",
+        "chunks_sha256",
+        "config",
+        "artifact_sha256"
+      ],
+      "expected": {"task_id": "Task2", "status": "READY", "index_type": "BM25"}
+    },
+    "public_phase_approval": {
+      "root": "control",
+      "path": "approvals/public_phase_approval.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": ["schema_version", "task_id", "status", "phase", "approved_by"],
+      "expected": {"task_id": "Task2", "status": "APPROVED", "phase": "public"}
+    },
+    "private_phase_approval": {
+      "root": "control",
+      "path": "approvals/private_phase_approval.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": ["schema_version", "task_id", "status", "phase", "approved_by"],
+      "expected": {"task_id": "Task2", "status": "APPROVED", "phase": "private"}
+    },
+    "submission_contract": {
+      "root": "control",
+      "path": "submission/submission_contract.json",
+      "kind": "json",
+      "manifested": false,
+      "required_keys": [
+        "schema_version",
+        "task_id",
+        "status",
+        "phase",
+        "expected_ids_sha256",
+        "zip_members",
+        "encoding"
+      ],
+      "expected": {"task_id": "Task2", "status": "APPROVED"}
+    }
+  }
+}

@@ -27,7 +27,9 @@ dev = [
   "mypy>=1.17,<2",
   "pytest>=8.4,<9",
   "pytest-cov>=6.2,<8",
+  "pyyaml>=6,<7",
   "ruff>=0.12,<1",
+  "types-pyyaml>=6,<7",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -35,6 +37,8 @@ packages = [
   "Source/Shared/text_retrieval_agent",
   "Source/Task1/legal_ir",
   "Source/Task2/legal_qa",
+  "Source/Task2/Offline",
+  "Source/Task2/Online",
 ]
 
 [tool.pytest.ini_options]
@@ -49,7 +53,7 @@ target-version = "py312"
 select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["legal_ir", "legal_qa", "text_retrieval_agent"]
+known-first-party = ["Offline", "Online", "legal_ir", "legal_qa", "text_retrieval_agent"]
 
 [tool.mypy]
 python_version = "3.12"

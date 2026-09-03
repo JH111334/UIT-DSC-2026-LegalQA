@@ -1,0 +1,18 @@
+# Optional ML reconstruction constraints for Task 2 E0 training/inference.
+# DO NOT install this file for validation, checking, Offline preprocessing or BM25.
+# The lightweight team environment is pyproject.toml + uv.lock and is installed with:
+#   uv sync --locked
+# This file is retained only to document the separate ML environment used by prior runs;
+# it is not the project lock and no package/model installation is authorized by default.
+
+transformers==5.15.1
+accelerate==1.14.0
+peft==0.20.0
+safetensors>=0.6,<1
+torch==2.7.0
+bitsandbytes==0.50.1
+
+# Local environment note and intentionally deferred components:
+# - Install this file with `--torch-backend cu128` in the dedicated local ML venv.
+# - official METEOR/ROUGE-L scorer dependencies: wait for organizer parity contract.
+# - sentence-transformers/FAISS/reranker packages: not part of E0 or E1 BM25.

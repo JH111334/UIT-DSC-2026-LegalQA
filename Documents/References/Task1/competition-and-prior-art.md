@@ -1,20 +1,23 @@
-# Task 1 evidence map
+# Bản đồ bằng chứng Task 1
 
-UIT DSC identity: Legal Information Retrieval on the dedicated
-[Codabench competition](https://www.codabench.org/competitions/17715/). The local
-warm-up file and Drive URL came from the organizer message supplied by the user;
-the public page does not expose the full scoring/submission specification.
+UIT DSC định danh Task 1 là Legal Information Retrieval trên Codabench. Contract
+đã xác minh: tối đa 5 document ID, Macro Recall chính và Macro Precision tie-break.
+Thông báo BTC mới do người dùng cung cấp được ưu tiên cho data/model/API.
 
-| Evidence | Finding | Use |
+| Nguồn | Phát hiện | Cách dùng |
 |---|---|---|
-| [ALQAC 2024 task page](https://sites.google.com/view/alqac-2024/home) | Analogous Vietnamese legal retrieval uses article-level relevance and F2 | Local diagnostic only; not an UIT rule |
-| [NOWJ1 at ALQAC 2023](https://arxiv.org/abs/2309.09070) | Lexical, neural features, article/clause preprocessing, learning-to-rank | Preserve structured units; defer learned fusion |
-| [NOWJ at ALQAC 2024](https://doi.org/10.1109/KSE63888.2024.11063594) | Winning system combines document-ranking signals and learned ranking | Benchmark staged fusion/reranking |
-| [ViDRILL](https://aclanthology.org/2025.vlsp-1.17/) | BM25 + dense retrieval + cross-encoder; chunking and hard negatives matter | Adopt bounded multi-stage benchmark |
-| [Vietnamese IR study](https://aclanthology.org/2026.findings-eacl.110/) | Legal-domain results favor Vietnamese embedding plus lexical retrieval | Prioritize Vietnamese_Embedding_v2 hybrid |
-| [se7enese implementation](https://github.com/baohl00/alqac24) | Reproducible ALQAC retrieval/QA code | Inspect adapters; do not copy manual post-processing |
-| [ViRE implementation](https://github.com/longstnguyen/ViRE) | Multi-domain Vietnamese IR evaluation code | Reference evaluation protocol |
+| [ALQAC 2024](https://sites.google.com/view/alqac-2024/home) | Legal retrieval tiếng Việt tương tự dùng relevance cấp điều và F2 | Chỉ diagnostic local, không phải luật UIT |
+| [NOWJ1 2023](https://arxiv.org/abs/2309.09070) | Lexical + neural, cấu trúc điều/khoản và learning-to-rank | Giữ cấu trúc; hoãn learned fusion |
+| [NOWJ 2024](https://doi.org/10.1109/KSE63888.2024.11063594) | Winning system kết hợp ranking signal | Benchmark fusion/rerank theo stage |
+| [ViDRILL](https://aclanthology.org/2025.vlsp-1.17/) | BM25 + dense + cross-encoder; chunk/hard negative quan trọng | Multi-stage bounded sau baseline |
+| [ViRE](https://aclanthology.org/2026.findings-eacl.110/) | Embedding tiếng Việt + lexical mạnh trên nhiều domain | Candidate hybrid, cần held-out |
+| [ALQAC code](https://github.com/baohl00/alqac24) | Implementation retrieval/QA công khai | Tham khảo adapter, không chép post-process |
+| [ViRE code](https://github.com/longstnguyen/ViRE) | Evaluation code cho IR tiếng Việt | Tham khảo protocol |
 
-Decision: deterministic lexical baseline first; Vietnamese_Embedding_v2 and
-Vietnamese_Reranker first neural pair; BGE-M3, E5, Qwen3, and VietLegal-Harrier are
-challengers. No external result is a DSC score.
+Quyết định: audit passage rỗng/trùng rồi lexical deterministic trước. Neural pair đầu là
+`AITeamVN/Vietnamese_Embedding_v2` + `AITeamVN/Vietnamese_Reranker`; BGE-M3,
+E5, Qwen3 và VietLegal-Harrier chỉ là challenger. Tất cả vẫn bị chặn bởi qrels,
+hard-negative analysis, resource probe và cùng evaluation contract; chưa model nào
+được bật hoặc có điểm DSC. ALQAC F2 chỉ là prior-art, không thay metric UIT.
+
+Xem organizer-clarification-summary.md cho contract và trade-off Recall/Precision.

@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 *.so
 .venv/
+.venv-task2-ml/
 venv/
 env/
 __pypackages__/
@@ -28,6 +29,7 @@ htmlcov/
 .env
 .env.*
 !.env.example
+kaggle.json
 *.log
 *.tmp
 .vscode/
@@ -39,9 +41,9 @@ Thumbs.db
 /Data/Task1/warmup_data/*
 !/Data/Task1/warmup_data/README.md
 !/Data/Task1/warmup_data/manifest.json
-/Data/Task2/warmup_data/*
-!/Data/Task2/warmup_data/README.md
-!/Data/Task2/warmup_data/manifest.json
+/Data/Task2/*
+!/Data/Task2/README.md
+!/Data/Task2/manifest.json
 /Data/**/raw/
 /Data/**/indexes/
 
@@ -51,7 +53,10 @@ Thumbs.db
 /checkpoints/
 /experiments/*/runs/
 /submissions/*/outputs/
+/submissions/**/*.zip
+/Source/ol.zip
 /.cache/
+/.tmp/
 *.ckpt
 *.onnx
 *.pt
@@ -61,3 +66,9 @@ Thumbs.db
 /Documents/**/*.docx
 /Documents/**/*.pdf
 /Documents/**/rendered/
+
+# Large session logs and scratch artifacts (local only)
+THERUN.md
+DSC2026.zip
+context_for_chatgpt.md
+/converted/

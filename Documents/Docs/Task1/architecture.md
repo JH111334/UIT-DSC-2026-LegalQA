@@ -15,8 +15,8 @@ legal corpus manifest
   -> optional dense candidate set
   -> RRF with component ranks
   -> optional bounded cross-encoder rerank
-  -> threshold/fallback calibrated on held-out data
-  -> ordered document IDs
+  -> fixed top-5 anchor; optional calibrated adaptive-k
+  -> tối đa 5 ordered unique document IDs
 ```
 
 Dense and reranker stages are disabled in committed configs. The warm-up file has
@@ -25,6 +25,7 @@ query labels but no corpus in this repository; it cannot establish retrieval qua
 ## Gate
 
 - Compare identical queries and corpus versions.
-- Report Macro-F2 only as a local analogue until BTC confirms the metric.
+- Report official Macro Recall trước, Macro Precision làm tie-break.
 - Also report Recall@k, MRR, nDCG@k, p50/p95 latency, peak memory, and failures.
 - Check duplicate IDs, unknown IDs, empty predictions, and split leakage.
+- Audit train passage rỗng/trùng và chia split theo duplicate group.

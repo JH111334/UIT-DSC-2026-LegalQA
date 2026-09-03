@@ -1,20 +1,15 @@
 # Architecture
 
-## Product boundary
+## Competition boundary
 
-The system answers questions over a governed document collection. It is a retrieval
-system with a bounded agent control layer, not an unrestricted chatbot.
+Hai task là hai hệ thống độc lập về dữ liệu, code, config, checkpoint, experiment
+và submission. Không có cạnh Task 1 retrieval → Task 2 answer.
 
-```text
-versioned document corpus
-  -> contract validation
-  -> deterministic stable chunks
-  -> access-scope filter
-  -> BM25 candidates + TF-IDF candidates
-  -> Reciprocal Rank Fusion
-  -> bounded route
-  -> extractive evidence + validated citations or abstention
-```
+    Task 1 data -> preprocess -> retrieval/rerank -> tối đa 5 document ID
+
+    Task 2 data -> QA release + official Task 2 corpus release
+      -> E0 direct generator | approved E1 Task2-only retrieval + generator
+      -> deterministic decoding -> METEOR/ROUGE-L -> answer submission
 
 ## Implemented smoke profile
 
@@ -23,24 +18,36 @@ versioned document corpus
 - Vietnamese-English normalization.
 - Access-scoped BM25 and sparse TF-IDF retrieval.
 - RRF with component score and rank preservation.
-- Lookup, comparison, and abstention routes.
-- Extractive fallback with retrieved-chunk citations.
-- Evaluation for Recall@k, MRR, abstention, and citation integrity.
+- Lookup, comparison, abstention và extractive answer chỉ là reusable fixture.
+- Evaluation fixture cho Recall@k, MRR, abstention và citation integrity.
+- Warm-up schema/model policy và project validator.
 
-No LLM is required for the core path. `allow_llm=false` is deliberate until an
-adapter has bounded inputs, schema validation, timeout, cost limits, and the same
-extractive fallback.
+Profile này chưa triển khai Task 2 SFT hoặc metric chính thức. Xem
+Documents/References/MAP.md cho critical path.
 
 ## Trust boundaries
 
-Access scope is applied before candidates are scored. Answer citations are created
-only from the returned authorized chunks. A production implementation must repeat
-scope enforcement in the catalog, cache, index, answer, and logging layers.
+Task 1 vẫn giữ provenance và access scope trước candidate generation. Task 2 chỉ
+nhận artifact mang provenance Task 2; mọi cross-task path phải fail. Việc cả hai
+lane cùng có tên BM25/RRF không cho phép dùng chung corpus, index, code runtime hoặc
+trace. Raw organizer data, model, run và submission ở ngoài Git.
 
 ## Development adapters
 
-1. Dense multilingual encoder behind the existing retriever contract.
-2. Cross-encoder reranking over bounded top-k.
-3. Versioned persistent catalog and immutable serving release.
-4. LLM answer adapter constrained to retrieved citation IDs.
-5. API, observability, prompt-injection tests, and tenant isolation.
+1. Task 2 immutable raw manifest và integrity audit.
+2. Group-aware split, corpus legal chunks/provenance và phase-specific handoff gate.
+3. Tokenizer/length audit và answer-only SFT cho E0 direct control.
+4. Exact METEOR/ROUGE-L scorer parity và case-level error analysis.
+5. Task2-only BM25 E1 sau ADR; Task 1 dense/rerank adapters ở lane riêng.
+6. Submission validator và clean-environment replay.
+
+<!-- BEGIN competition-product-transfer:v1 -->
+
+## Competition và product transfer boundary
+
+Root architecture tối ưu scoreable/replayable competition slice; không mở multi-tenant,
+managed database, object store, vector service hay queue chỉ để giống production.
+Capstone `Multimodal-Asset-Retrieval` tái sử dụng contract qua adapter, không import
+organizer data/submission package. Mọi transfer phải có domain-neutral test và license/
+privacy review.
+<!-- END competition-product-transfer:v1 -->
