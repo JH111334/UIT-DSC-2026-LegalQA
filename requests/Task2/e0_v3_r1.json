@@ -1,0 +1,24 @@
+{
+  "schema_version": "task2-kaggle-batch-request-v1",
+  "operation": "train-evaluate-predict",
+  "stage": "e0",
+  "private_kernel": true,
+  "private_dataset": true,
+  "run_id": "e0-v3-r1",
+  "dataset_slug": "hoangkhang23/dsc2026-task2-e0-v3-r1-input",
+  "kernel_slug": "hoangkhang23/dsc2026-task2-e0-v3-r1",
+  "model_id": "Qwen/Qwen2.5-1.5B-Instruct",
+  "model_revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+  "release_root": "Data/Task2/releases/task2-data-v3",
+  "control_root": "Data/Task2/control",
+  "run_root": "Data/Task2/runs/e0-v3-r1",
+  "submission_path": "submissions/Task2/e0-v3-r1/submission.zip",
+  "report": "Data/Task2/reports/e0-v3-r1_report.json",
+  "timeout_minutes": 720,
+  "packages": [
+    "transformers==4.44.2",
+    "peft==0.12.0",
+    "accelerate==0.34.2",
+    "bitsandbytes==0.43.3"
+  ]
+}

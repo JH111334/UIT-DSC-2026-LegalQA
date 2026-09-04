@@ -172,7 +172,7 @@ def _execute_pipeline(
         index_candidate = release / "index"
     if (index_candidate / "index_manifest.json").is_file():
         bm25_module = importlib.import_module("Online.RetrievingAnswer.bm25")
-        index = bm25_module.SQLiteBM25Index(index_candidate)
+        index = bm25_module.BM25Index(index_candidate / "bm25.sqlite3")
         evidence_provider = engine_module.BM25Evidence(index)
     engine = engine_module.TransformersAnswerEngine(
         control, run, evidence_provider=evidence_provider

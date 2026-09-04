@@ -200,7 +200,9 @@ def sha256(path: Path) -> str:
 
 
 def _build_runtime_zip(target: Path) -> None:
-    roots = (ROOT / "Source" / "Task2", ROOT / "SourceAPI")
+    roots = [ROOT / "Source" / "Task2", ROOT / "SourceAPI"]
+    if (ROOT / "src").is_dir():
+        roots.append(ROOT / "src")
     with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for root in roots:
             for path in sorted(root.rglob("*.py")):
