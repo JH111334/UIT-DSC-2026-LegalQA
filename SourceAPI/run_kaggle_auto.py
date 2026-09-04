@@ -148,13 +148,17 @@ def _wait_for_dataset_payload(slug: str, timeout_seconds: int = 600) -> None:
         "public.jsonl",
     }
     deadline = time.monotonic() + timeout_seconds
+    missing: list[str] = list(required)
     while time.monotonic() < deadline:
-        result = _command(
-            ["kaggle", "datasets", "files", slug], timeout=60, capture=True
-        )
-        missing = sorted(name for name in required if name not in result.stdout)
-        if not missing:
-            return
+        status_proc = _command(["kaggle", "datasets", "status", slug], timeout=60, capture=True)
+        if "ready" in status_proc.stdout.casefold():
+            result = _command(
+                ["kaggle", "datasets", "files", slug], timeout=60, capture=True
+            )
+            missing = sorted(name for name in required if name not in result.stdout)
+            if not missing:
+                time.sleep(15)
+                return
         time.sleep(10)
     raise KaggleRunError(f"Kaggle dataset payload is not ready: {missing}")
 
@@ -177,13 +181,19 @@ def _monitor(slug: str, timeout_minutes: int) -> None:
 def _command(
     command: list[str], *, timeout: int, capture: bool = False
 ) -> subprocess.CompletedProcess[str]:
+    import os
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
     result = subprocess.run(
         command,
         check=False,
         text=True,
         encoding="utf-8",
+        errors="replace",
         timeout=timeout,
         capture_output=capture,
+        env=env,
     )
     if result.returncode != 0:
         detail = result.stderr.strip() if capture else "see Kaggle CLI output"

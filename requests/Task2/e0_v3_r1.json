@@ -16,9 +16,10 @@
   "report": "Data/Task2/reports/e0-v3-r1_report.json",
   "timeout_minutes": 720,
   "packages": [
-    "transformers==4.44.2",
-    "peft==0.12.0",
-    "accelerate==0.34.2",
-    "bitsandbytes==0.43.3"
+    "transformers==5.15.1",
+    "accelerate==1.14.0",
+    "peft==0.20.0",
+    "safetensors>=0.6,<1",
+    "bitsandbytes==0.50.1"
   ]
 }
