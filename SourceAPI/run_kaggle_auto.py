@@ -135,6 +135,7 @@ def _publish_dataset(target: Path, slug: str, payload_hash: str) -> None:
         command = ["kaggle", "datasets", "create", "-p", str(target), "-q", "-t"]
     _command(command, timeout=1800)
     _wait_for_dataset_payload(slug)
+    time.sleep(30)
 
 
 def _wait_for_dataset_payload(slug: str, timeout_seconds: int = 600) -> None:

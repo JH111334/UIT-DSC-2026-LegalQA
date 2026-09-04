@@ -85,12 +85,20 @@ def prepare_kernel(request: dict[str, Any], target: Path) -> None:
         raise KaggleRunError("packages must be a list of pinned requirement strings.")
     dataset_name = str(request["dataset_slug"]).split("/", 1)[1]
     bootstrap = (
-        "import json, pathlib, subprocess, sys, zipfile\n"
+        "import json, pathlib, subprocess, sys, time, zipfile\n"
         f"PACKAGES = {json.dumps(packages)}\n"
         "if PACKAGES:\n"
         "    command = [sys.executable, '-m', 'pip', 'install', '--no-cache-dir', '-q']\n"
         "    subprocess.check_call([*command, *PACKAGES])\n"
         f"dataset = pathlib.Path('/kaggle/input/{dataset_name}')\n"
+        "for attempt in range(60):\n"
+        "    if (dataset / 'runtime.bundle').is_file():\n"
+        "        break\n"
+        "    candidates = list(pathlib.Path('/kaggle/input').rglob('runtime.bundle'))\n"
+        "    if candidates:\n"
+        "        dataset = candidates[0].parent\n"
+        "        break\n"
+        "    time.sleep(5)\n"
         "runtime = pathlib.Path('/kaggle/working/runtime')\n"
         "runtime.mkdir(parents=True, exist_ok=True)\n"
         "with zipfile.ZipFile(dataset / 'runtime.bundle') as archive:\n"
