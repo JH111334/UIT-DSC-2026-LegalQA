@@ -305,3 +305,15 @@ Bundle A+B, QA release preflight PASS và tokenizer attachment có status rõ
 Manual audit hoàn tất theo sample contract, match report cập nhật và reviewer decision rõ.
 
 Không trạng thái nào ở trên tự chứng minh model quality hoặc cho phép API/remote upload.
+
+## 6. Yêu cầu Bàn giao Lần 3 (	ask2-data-v3) — Chuẩn bị cho E1 RAG
+
+Dựa trên kết quả phân tích lỗi lần 2 (TASK3), Phase B yêu cầu Phase A bàn giao release 	ask2-data-v3 với các điểm nâng cấp sau:
+
+1. **Làm Sạch Boilerplate Đuôi Bài Viết (QA Sanitation)**:
+   - Cắt bỏ hoàn toàn các chuỗi (Hình từ Internet), (Ảnh minh họa) hoặc tên trang web ở đuôi trường nswer_raw khi ánh xạ sang nswer_model.
+   - Cắt bỏ các câu hỏi liên đới không liên quan xuất hiện sau dấu chấm lửng ……. ở cuối câu trả lời.
+2. **Đồng Bộ Metadata Pháp Lý trong Chunks**:
+   - Mỗi chunk trong corpus/chunks.jsonl phải có trường doc_id, rticle_id rõ ràng để phục vụ việc trích dẫn chính xác trong câu trả lời.
+3. **Index Bundle Bổ Trợ (Bundle D)**:
+   - Phase A cung cấp kèm thư mục indexes/bm25_task2_v3/ (hoặc cơ sở dữ liệu SQLite FTS5) đã được lập chỉ mục toàn văn trên chunks.jsonl để Phase B có thể nạp trực tiếp vào pipeline truy xuất RAG của E1.

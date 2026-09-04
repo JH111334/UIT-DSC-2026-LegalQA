@@ -118,6 +118,7 @@ class TransformersAnswerEngine:
         self.max_input_tokens = int(training.get("max_sequence_length", 2048))
         self.max_new_tokens = int(decoding["max_new_tokens"])
         self.repetition_penalty = float(decoding.get("repetition_penalty", 1.0))
+        self.no_repeat_ngram_size = int(decoding.get("no_repeat_ngram_size", 0))
         self.inference_batch_size = int(decoding.get("inference_batch_size", 1))
         self.decode_id = str(decoding["decode_id"])
         self.decoding_config_sha256 = _sha256(decoding_path)
@@ -165,20 +166,22 @@ class TransformersAnswerEngine:
         device = next(self.model.parameters()).device
         encoded = {name: tensor.to(device) for name, tensor in encoded.items()}
         input_width = int(encoded["input_ids"].shape[-1])
+        gen_kwargs: dict[str, Any] = {
+            "do_sample": False,
+            "max_new_tokens": self.max_new_tokens,
+            "repetition_penalty": self.repetition_penalty,
+            "pad_token_id": (
+                self.tokenizer.pad_token_id
+                if self.tokenizer.pad_token_id is not None
+                else self.tokenizer.eos_token_id
+            ),
+            "eos_token_id": self.tokenizer.eos_token_id,
+            "use_cache": True,
+        }
+        if self.no_repeat_ngram_size > 0:
+            gen_kwargs["no_repeat_ngram_size"] = self.no_repeat_ngram_size
         with self.torch.inference_mode():
-            output = self.model.generate(
-                **encoded,
-                do_sample=False,
-                max_new_tokens=self.max_new_tokens,
-                repetition_penalty=self.repetition_penalty,
-                pad_token_id=(
-                    self.tokenizer.pad_token_id
-                    if self.tokenizer.pad_token_id is not None
-                    else self.tokenizer.eos_token_id
-                ),
-                eos_token_id=self.tokenizer.eos_token_id,
-                use_cache=True,
-            )
+            output = self.model.generate(**encoded, **gen_kwargs)
         results: list[AnswerResult] = []
         for index, retrieval_trace in enumerate(retrieval_traces):
             raw_generated = output[index][input_width:].tolist()
@@ -259,11 +262,14 @@ def _validate_decoding(value: Mapping[str, Any]) -> None:
         raise ValueError("Decoding config must be approved deterministic Task 2 greedy decode.")
     max_new_tokens = int(value.get("max_new_tokens", 0))
     repetition_penalty = float(value.get("repetition_penalty", 1.0))
+    no_repeat_ngram_size = int(value.get("no_repeat_ngram_size", 0))
     inference_batch_size = int(value.get("inference_batch_size", 1))
     if not 1 <= max_new_tokens <= 2048:
         raise ValueError("max_new_tokens must be between 1 and 2048.")
     if not 0.5 <= repetition_penalty <= 2.0:
         raise ValueError("repetition_penalty must be between 0.5 and 2.0.")
+    if not 0 <= no_repeat_ngram_size <= 10:
+        raise ValueError("no_repeat_ngram_size must be between 0 and 10.")
     if not 1 <= inference_batch_size <= 32:
         raise ValueError("inference_batch_size must be between 1 and 32.")
 

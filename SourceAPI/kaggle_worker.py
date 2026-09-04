@@ -166,8 +166,17 @@ def _execute_pipeline(
     training = training_module.train_e0(release, control, run)
     _pin_runtime_code(run, str(payload["files"]["runtime.bundle"]))
     gc.collect()
-    torch.cuda.empty_cache()
-    engine = engine_module.TransformersAnswerEngine(control, run)
+    evidence_provider = None
+    index_candidate = control / "index"
+    if not (index_candidate / "index_manifest.json").is_file():
+        index_candidate = release / "index"
+    if (index_candidate / "index_manifest.json").is_file():
+        bm25_module = importlib.import_module("Online.RetrievingAnswer.bm25")
+        index = bm25_module.SQLiteBM25Index(index_candidate)
+        evidence_provider = engine_module.BM25Evidence(index)
+    engine = engine_module.TransformersAnswerEngine(
+        control, run, evidence_provider=evidence_provider
+    )
     validation = batch.BatchInferenceRunner(engine).run(
         release / "qa/validation.jsonl",
         run / "validation_predictions.json",
