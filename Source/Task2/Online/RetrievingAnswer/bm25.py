@@ -75,12 +75,25 @@ class BM25Index:
         ]
 
 
-def build_bm25_index(release_root: Path, run_root: Path) -> dict[str, Any]:
-    """Build the canonical E1 index atomically outside the immutable release."""
+def build_bm25_index(
+    release_root: Path,
+    run_root: Path,
+    *,
+    index_id: str = "task2-e1-bm25-v1",
+    manifest_status: str = "READY",
+) -> dict[str, Any]:
+    """Build an E1 index atomically outside the immutable release."""
     chunks_path = release_root / "corpus" / "chunks.jsonl"
     corpus_manifest = release_root / "corpus" / "corpus_manifest.json"
-    if not chunks_path.is_file() or not corpus_manifest.is_file():
+    release_manifest = release_root / "manifest.json"
+    if not chunks_path.is_file() or not corpus_manifest.is_file() or not release_manifest.is_file():
         raise FileNotFoundError("Canonical corpus chunks/manifest are required for E1.")
+    if manifest_status not in {"READY", "CANDIDATE"}:
+        raise ValueError("Index manifest status must be READY or CANDIDATE.")
+    release_payload = json.loads(release_manifest.read_text(encoding="utf-8"))
+    release_id = str(release_payload.get("release_id") or "")
+    if not release_id:
+        raise ValueError("Release manifest is missing release_id.")
     index_root = run_root / "index"
     index_root.mkdir(parents=True, exist_ok=True)
     target = index_root / "bm25.sqlite3"
@@ -130,12 +143,23 @@ def build_bm25_index(release_root: Path, run_root: Path) -> dict[str, Any]:
     except (OSError, sqlite3.Error, ValueError, json.JSONDecodeError):
         temporary.unlink(missing_ok=True)
         raise
+    uri = f"file:{target.resolve().as_posix()}?mode=ro"
+    with sqlite3.connect(uri, uri=True) as connection:
+        integrity = str(connection.execute("PRAGMA integrity_check").fetchone()[0])
+        stored_rows = int(connection.execute("SELECT count(*) FROM chunks").fetchone()[0])
+    if integrity != "ok" or stored_rows != indexed:
+        raise RuntimeError(
+            f"Built BM25 index failed verification: integrity={integrity} "
+            f"rows={stored_rows} expected={indexed}"
+        )
     manifest = {
         "schema_version": "task2-index-manifest-v1",
         "task_id": "Task2",
-        "status": "READY",
-        "index_id": "task2-e1-bm25-v1",
+        "status": manifest_status,
+        "index_id": index_id,
+        "release_id": release_id,
         "index_type": "BM25",
+        "release_manifest_sha256": _sha256(release_manifest),
         "corpus_manifest_sha256": _sha256(corpus_manifest),
         "chunks_sha256": _sha256(chunks_path),
         "config": {
@@ -147,6 +171,7 @@ def build_bm25_index(release_root: Path, run_root: Path) -> dict[str, Any]:
         "artifact": target.name,
         "artifact_sha256": _sha256(target),
         "indexed_chunks": indexed,
+        "sqlite_integrity_check": integrity,
     }
     _write_json(manifest_path, manifest)
     return manifest

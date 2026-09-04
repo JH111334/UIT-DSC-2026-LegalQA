@@ -1,0 +1,24 @@
+seed: 2026
+data:
+  data_dir: "LegalQA - Public Test"
+  train_file: train.json
+  test_file: public-official.json
+  contexts_zip: selected-contexts.zip
+  artifacts_dir: artifacts/default
+retrieval:
+  bm25_enabled: true
+  dense_enabled: false
+  bm25_top_k: 100
+  dense_top_k: 100
+  rrf_top_k: 50
+  rrf_constant: 60
+  legal_metadata_boost: 0.0
+  rerank_enabled: false
+  rerank_top_k: 50
+complexity: {enabled: false, complexity_top_k: [3, 5, 8], confidence_enabled: false}
+expansion: {parent_enabled: false, graph_enabled: false}
+models:
+  dense: {enabled: false, backend: none}
+  reranker: {enabled: false, backend: lexical}
+  generator: {enabled: false, backend: extractive}
+diagnostic: {allow_training_use: false}

@@ -1,7 +1,6 @@
 """Test Task 1 submission contracts and local diagnostics."""
 
 import pytest
-
 from legal_ir import LegalIRPrediction, macro_fbeta
 
 

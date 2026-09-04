@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from text_retrieval_agent.cli import main
 
 ROOT = Path(__file__).parents[2]

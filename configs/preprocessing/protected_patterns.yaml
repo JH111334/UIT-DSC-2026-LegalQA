@@ -1,0 +1,22 @@
+version: corpus-v2.1
+
+patterns:
+  - "^điều\\s+\\d+"
+  - "^khoản\\s+\\d+"
+  - "^điểm\\s+[a-zđ]"
+  - "^chương\\s+(?:[ivxlcdm]+|\\d+)"
+  - "^mục\\s+(?:[ivxlcdm]+|\\d+)"
+  - "^căn cứ"
+  - "sửa đổi"
+  - "bổ sung"
+  - "thay thế"
+  - "bãi bỏ"
+  - "hết hiệu lực"
+  - "có hiệu lực"
+  - "nghị định"
+  - "thông tư"
+  - "quyết định"
+  - "bộ luật"
+  - "luật"
+  - "nghị quyết"
+  - "\\b\\d{1,5}/\\d{4}/[a-zđ0-9-]+\\b"

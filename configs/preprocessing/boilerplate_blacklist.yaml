@@ -1,0 +1,27 @@
+version: corpus-v2.1
+
+# Only manually reviewed, non-legal retrieval boilerplate belongs here.
+exact_lines:
+  - "cộng hòa xã hội chủ nghĩa việt nam"
+  - "cộng hoà xã hội chủ nghĩa việt nam"
+  - "độc lập - tự do - hạnh phúc"
+
+regex_lines:
+  - "^-{5,}$"
+  - "^\\*{5,}$"
+
+# These are discovery signals only. A match is logged, never auto-deleted.
+review_candidates:
+  - "thành viên tvpl"
+  - "tvpl pro"
+  - "đăng nhập"
+  - "đăng ký"
+  - "thư viện pháp luật"
+  - "xem thêm"
+  - "nội dung đang được cập nhật"
+  - "click"
+  - "hotline"
+  - "đt:"
+  - "dđ:"
+  - "email:"
+  - "quảng cáo"

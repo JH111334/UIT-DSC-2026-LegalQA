@@ -2,7 +2,11 @@
 
 from collections.abc import Callable
 
-from text_retrieval_agent.contracts import ChunkRecord, RetrievalQuery, RetrieverCandidate
+from text_retrieval_agent.contracts import (
+    ChunkRecord,
+    RetrievalQuery,
+    RetrieverCandidate,
+)
 from text_retrieval_agent.text import BM25Index, TfidfIndex
 
 

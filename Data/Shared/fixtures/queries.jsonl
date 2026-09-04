@@ -1,4 +1,4 @@
-{"query_id":"q_rollback_vi","text":"Cách quay lại phiên bản ổn định khi triển khai lỗi?","allowed_scopes":["public"],"answerable":true}
-{"query_id":"q_access_en","text":"How should search enforce access scope before ranking?","allowed_scopes":["public"],"answerable":true}
-{"query_id":"q_agent_citation","text":"Why must the agent cite retrieved chunks and abstain?","allowed_scopes":["public"],"answerable":true}
-{"query_id":"q_unanswerable","text":"What is the office WiFi password?","allowed_scopes":["public"],"answerable":false}
+{"query_id":"q_release","text":"Cach quay lai phien ban on dinh khi trien khai loi?","answerable":true,"allowed_scopes":["public"]}
+{"query_id":"q_scope","text":"How should search enforce access scope?","answerable":true,"allowed_scopes":["public"]}
+{"query_id":"q_agent","text":"Why must the agent cite retrieved chunks and abstain?","answerable":true,"allowed_scopes":["public"]}
+{"query_id":"q_wifi","text":"What is the office WiFi password?","answerable":false,"allowed_scopes":["public"]}

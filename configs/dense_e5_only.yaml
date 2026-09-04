@@ -1,0 +1,44 @@
+seed: 2026
+data:
+  data_dir: "LegalQA - Public Test"
+  train_file: train.json
+  test_file: public-official.json
+  contexts_zip: selected-contexts.zip
+  artifacts_dir: artifacts/corpus_v2
+sanitation:
+  enabled: true
+  version: corpus-v2.1
+  blacklist_path: configs/preprocessing/boilerplate_blacklist.yaml
+  protected_patterns_path: configs/preprocessing/protected_patterns.yaml
+  review_policy_path: configs/preprocessing/boilerplate_review_policy.yaml
+chunking: {legal_aware: true, max_chars: 1800, overlap_chars: 220, min_chars: 60, preamble_chars: 1400}
+retrieval:
+  bm25_enabled: false
+  dense_enabled: true
+  bm25_top_k: 100
+  dense_top_k: 100
+  rrf_top_k: 50
+  rrf_constant: 60
+  bm25_weight: 1.0
+  dense_weight: 1.0
+  legal_metadata_boost: 0.0
+  rerank_enabled: false
+  rerank_top_k: 50
+complexity: {enabled: false, complexity_top_k: [3, 5, 8], confidence_enabled: false}
+expansion: {parent_enabled: false, graph_enabled: false}
+models:
+  parameter_limit_b: 4.0
+  dense:
+    enabled: true
+    backend: sentence_transformers
+    name_or_path: intfloat/multilingual-e5-small
+    parameters_b: 0.118
+    local_files_only: true
+    batch_size: 32
+    max_length: 512
+    query_prefix: "query: "
+    document_prefix: "passage: "
+    device: cpu
+  reranker: {enabled: false, backend: lexical}
+  generator: {enabled: false, backend: extractive}
+diagnostic: {enabled: true, allow_training_use: false, manual_sample_size: 150, seed: 2026}

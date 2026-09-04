@@ -1,0 +1,8 @@
+{
+  "schema_version": "task2-preprocess-request-v1",
+  "operation": "preflight",
+  "release_root": "../../../Data/Task2/releases/task2-data-v3",
+  "profile": "e0-direct",
+  "stage": "training",
+  "report": "../../../Data/Task2/preflight/task2-data-v3/preflight_e0_training.json"
+}

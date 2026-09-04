@@ -16,6 +16,7 @@ from .release_builder import (
     TASK_ID,
     _chunk_structure_bucket,
     _hash_values,
+    _safe_id,
     _valid_logical_parent_id,
     sha256_bytes,
     sha256_file,
@@ -28,6 +29,7 @@ _BASE_REQUIRED = {
     "split_manifest.json",
     "qa/train.jsonl",
     "qa/validation.jsonl",
+    "qa/sanitation_report.json",
 }
 _CORPUS_REQUIRED = {
     "corpus/corpus_manifest.json",
@@ -36,6 +38,7 @@ _CORPUS_REQUIRED = {
     "corpus/chunks.jsonl",
     "corpus/quarantine.jsonl",
     "corpus/corpus_report.json",
+    "corpus/form_placeholder_audit.json",
     "diagnostics/citation_qrels.jsonl",
     "diagnostics/citation_match_report.json",
     "diagnostics/citation_manual_audit.jsonl",
@@ -242,6 +245,8 @@ def _validate_corpus(
     chunk_required = {
         "chunk_id",
         "doc_id",
+        "article_id",
+        "clause_id",
         "source_task",
         "parent_chunk_id",
         "doc_type",
@@ -317,6 +322,16 @@ def _validate_corpus(
             errors.append(f"Cross-task chunk {chunk_id}")
         if value["parser_version"] != PARSER_VERSION:
             errors.append(f"Wrong parser version chunk_id={chunk_id}")
+        article = str(value.get("article") or "")
+        clause = str(value.get("clause") or "")
+        expected_article_id = parent_chunk_id if article else None
+        expected_clause_id = (
+            f"{parent_chunk_id}_clause_{_safe_id(clause)}" if clause else None
+        )
+        if value.get("article_id") != expected_article_id:
+            errors.append(f"Invalid article_id chunk_id={chunk_id}")
+        if value.get("clause_id") != expected_clause_id:
+            errors.append(f"Invalid clause_id chunk_id={chunk_id}")
 
     quarantine_count = 0
     quarantine_ids: set[str] = set()
@@ -512,6 +527,13 @@ def validate_data_release(
         value = _load_json(root / report_name, errors)
         if value.get("status") != "PASS":
             errors.append(f"{report_name} does not PASS")
+    qa_sanitation = _load_json(root / "qa" / "sanitation_report.json", errors)
+    if qa_sanitation.get("status") != "PASS":
+        errors.append("qa/sanitation_report.json does not PASS")
+    if qa_sanitation.get("media_note_occurrences_after") != 0:
+        errors.append("QA media-note sanitation residue is non-zero")
+    if qa_sanitation.get("related_question_ellipsis_after") != 0:
+        errors.append("QA related-question sanitation residue is non-zero")
     leakage = _load_json(root / "leakage_report.json", errors)
     for key in ("cross_task_hits", "public_label_usage", "private_label_usage"):
         if leakage.get(key) != 0:
@@ -548,6 +570,7 @@ def validate_data_release(
         document_count, chunk_count, qrel_count = _validate_corpus(root, validation_ids, errors)
         for report_name in (
             "corpus/corpus_report.json",
+            "corpus/form_placeholder_audit.json",
             "diagnostics/citation_match_report.json",
         ):
             value = _load_json(root / report_name, errors)

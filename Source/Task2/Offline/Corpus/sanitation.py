@@ -18,8 +18,14 @@ PAYWALL_RE = re.compile(
     r"để\s+sử\s+dụng\s+được\s+đầy\s+đủ\s+các\s+tiện\s+ích\s+gia\s+tăng\s+liên\s+quan\s+"
     r"đến\s+nội\s+dung\s+tcvn\s*\.?\s*mọi\s+chi\s+tiết\s+xin\s+liên\s+hệ\s*:\s*"
     r"đt\s*:\s*\(?028\)?\s*3930\s*3279\s*dđ\s*:\s*0906\s*22\s*99\s*66\s*\.?",
-    re.I,
+    re.IGNORECASE,
 )
+_MEDIA_NOTE_RE = re.compile(r"(?i)\((?:Hình từ Internet|Ảnh minh họa)\)")
+_TRAILING_MEDIA_BLOCK_RE = re.compile(
+    r"(?is)\n\s*\n[^\n]{1,300}?\s*\((?:Hình từ Internet|Ảnh minh họa)\)\s*$"
+)
+_TRAILING_RELATED_QUESTION_RE = re.compile(r"(?:…\s*){2,}\.?\s*.*$", re.DOTALL)
+_HORIZONTAL_WHITESPACE_RE = re.compile(r"[ \t\u00a0]+")
 _NOI_NHAN_RE = re.compile(r"(?im)^[ \t]*nơi\s+nhận\s*:")
 _ROUTING_LINE_RE = re.compile(r"(?m)^[ \t]*[-\u2013\u2014+]\s*\S+")
 _SIGNATORY_RE = re.compile(
@@ -27,7 +33,7 @@ _SIGNATORY_RE = re.compile(
 )
 _TOKEN_RE = re.compile(r"\S+")
 _WEB_CODE_PATTERNS = tuple(
-    re.compile(pattern, re.I)
+    re.compile(pattern, re.IGNORECASE)
     for pattern in (
         r"\$\s*\(",
         r"\$\.(?:ajax|get|post)\s*\(",
@@ -91,6 +97,33 @@ class SanitationResult:
     generation_text: str
     metrics: dict[str, Any]
     flags: tuple[str, ...]
+
+
+def sanitize_answer_raw(text: str) -> str:
+    """Create the model answer while preserving the untouched answer_raw field.
+
+    A media marker may occur before genuine legal content, so only a final,
+    blank-line-delimited caption is removed as a block. Other occurrences lose
+    the marker itself but retain surrounding legal text. Literal ASCII form
+    placeholders such as ``.........`` are deliberately outside the ellipsis rule.
+    """
+
+    value = normalize_text(str(text))
+    value = _TRAILING_RELATED_QUESTION_RE.sub("", value)
+    value = _TRAILING_MEDIA_BLOCK_RE.sub("", value)
+    value = _MEDIA_NOTE_RE.sub("", value)
+    lines = [_HORIZONTAL_WHITESPACE_RE.sub(" ", line).rstrip() for line in value.splitlines()]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
+
+
+def answer_sanitation_residue(text: str) -> dict[str, bool]:
+    """Return machine-readable A1 residue checks for a sanitized answer."""
+
+    value = str(text)
+    return {
+        "media_note": bool(_MEDIA_NOTE_RE.search(value)),
+        "related_question_ellipsis": bool(_TRAILING_RELATED_QUESTION_RE.search(value)),
+    }
 
 
 def _normalized_block(value: str) -> str:
@@ -251,12 +284,12 @@ class CorpusSanitizer:
         )
         self.blacklist_lines = {canonical_text(value) for value in blacklist.get("exact_lines", [])}
         self.blacklist_regex = [
-            re.compile(value, re.I) for value in blacklist.get("regex_lines", [])
+            re.compile(value, re.IGNORECASE) for value in blacklist.get("regex_lines", [])
         ]
         self.review_candidates = tuple(
             str(value).casefold() for value in blacklist.get("review_candidates", [])
         )
-        self.protected_regex = [re.compile(value, re.I) for value in protected.get("patterns", [])]
+        self.protected_regex = [re.compile(value, re.IGNORECASE) for value in protected.get("patterns", [])]
 
     def _protected(self, line: str) -> bool:
         normalized = canonical_text(line)

@@ -1,10 +1,11 @@
 """Orchestrate scoped sparse retrieval and deterministic fusion."""
 
 import time
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+import tomllib
 
 from text_retrieval_agent.contracts import (
     RetrievalQuery,

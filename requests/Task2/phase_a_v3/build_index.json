@@ -1,0 +1,8 @@
+{
+  "schema_version": "task2-preprocess-request-v1",
+  "operation": "build-index",
+  "release_root": "../../../Data/Task2/releases/task2-data-v3",
+  "index_run_root": "../../../Data/Task2/indexes/task2-data-v3-bm25-candidate",
+  "index_id": "task2-data-v3-bm25-v1",
+  "report": "../../../Data/Task2/preflight/task2-data-v3/build_index_report.json"
+}

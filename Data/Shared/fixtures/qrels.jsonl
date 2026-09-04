@@ -1,4 +1,3 @@
-{"query_id":"q_rollback_vi","document_id":"doc_release_rollback","relevance":1}
-{"query_id":"q_access_en","document_id":"doc_access_scope","relevance":1}
-{"query_id":"q_agent_citation","document_id":"doc_agent_contract","relevance":1}
-{"query_id":"q_agent_citation","document_id":"doc_access_scope","relevance":1}
+{"query_id":"q_release","document_id":"doc_release_rollback","relevance":1}
+{"query_id":"q_scope","document_id":"doc_access_scope","relevance":1}
+{"query_id":"q_agent","document_id":"doc_agent_contract","relevance":1}

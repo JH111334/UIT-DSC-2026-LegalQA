@@ -1,0 +1,12 @@
+data: {data_dir: "LegalQA - Public Test", artifacts_dir: artifacts/e0}
+audit: {near_duplicate_enabled: true}
+chunking: {legal_aware: false, max_chars: 1800, overlap_chars: 220}
+retrieval: {bm25_enabled: true, dense_enabled: false, rerank_enabled: false, rrf_top_k: 50}
+complexity: {enabled: false, complexity_top_k: [5, 5, 5], confidence_enabled: false}
+expansion: {parent_enabled: false, graph_enabled: false}
+models:
+  dense: {enabled: false, backend: none}
+  reranker: {enabled: false, backend: lexical}
+  generator: {enabled: false, backend: extractive}
+diagnostic: {allow_training_use: false}
+

@@ -17,8 +17,8 @@ from .metadata import extract_document_metadata
 from .normalize import normalize_text, text_fingerprint
 from .schema import LegalDocument, QAExample
 
-_CONTEXT_ID_RE = re.compile(r"context_([^/\\]+)\.json$", re.I)
-_TRAILING_SOURCE_ID_RE = re.compile(r"-\d+(?:\.aspx)?$", re.I)
+_CONTEXT_ID_RE = re.compile(r"context_([^/\\]+)\.json$", re.IGNORECASE)
+_TRAILING_SOURCE_ID_RE = re.compile(r"-\d+(?:\.aspx)?$", re.IGNORECASE)
 
 
 def load_qa(path: str | Path) -> list[QAExample]:
@@ -39,7 +39,7 @@ def load_qa(path: str | Path) -> list[QAExample]:
 def recover_name_from_link(link: str, document_id: str) -> str:
     path = urllib.parse.urlparse(link).path.rstrip("/")
     slug = urllib.parse.unquote(path.rsplit("/", 1)[-1])
-    slug = re.sub(r"\.aspx$", "", slug, flags=re.I)
+    slug = re.sub(r"\.aspx$", "", slug, flags=re.IGNORECASE)
     slug = _TRAILING_SOURCE_ID_RE.sub("", slug)
     slug = re.sub(r"[-_]+", " ", slug).strip()
     return normalize_text(slug, preserve_newlines=False) or f"Văn bản {document_id}"

@@ -3,9 +3,10 @@
 import hashlib
 import json
 import subprocess
-import tomllib
 from pathlib import Path
 from typing import Any
+
+import tomllib
 
 REQUIRED_PATHS = (
     "AGENTS.md",

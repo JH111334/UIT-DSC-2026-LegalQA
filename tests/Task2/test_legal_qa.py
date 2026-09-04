@@ -1,7 +1,6 @@
 """Test independent Task 2 answer contracts."""
 
 import pytest
-
 from legal_qa import LegalQAPrediction
 
 

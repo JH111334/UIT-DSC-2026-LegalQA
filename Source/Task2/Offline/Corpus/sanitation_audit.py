@@ -206,7 +206,7 @@ def review_boilerplate_candidates(config: PipelineConfig) -> dict[str, object]:
         str(value).casefold() for value in policy.get("site_labels_keep_conservative", [])
     }
     patterns = {
-        key: re.compile(str(value), re.I) for key, value in (policy.get("patterns") or {}).items()
+        key: re.compile(str(value), re.IGNORECASE) for key, value in (policy.get("patterns") or {}).items()
     }
     counts: Counter[str] = Counter()
     reviewed = []

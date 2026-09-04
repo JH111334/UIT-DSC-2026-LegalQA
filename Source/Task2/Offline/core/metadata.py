@@ -20,23 +20,23 @@ DOCUMENT_TYPES = (
     "Pháp lệnh",
 )
 
-_TYPE_RE = re.compile(r"\b(" + "|".join(re.escape(x) for x in DOCUMENT_TYPES) + r")\b", re.I)
+_TYPE_RE = re.compile(r"\b(" + "|".join(re.escape(x) for x in DOCUMENT_TYPES) + r")\b", re.IGNORECASE)
 _DOCUMENT_NUMBER_RE = re.compile(
     r"\b(?:số\s*)?(?P<number>\d{1,5}/(?:\d{4}|[A-ZĐ]{1,8})(?:/[A-ZĐ0-9-]{2,30})?)\b",
-    re.I,
+    re.IGNORECASE,
 )
 _ARTICLE_CITATION_RE = re.compile(
     r"điều\s+(?P<article>\d+[a-zđ]?)"
     r"(?:\s+(?P<doc_type>bộ\s+luật|luật|nghị\s+định|thông\s+tư(?:\s+liên\s+tịch)?|"
     r"nghị\s+quyết|quyết\s+định|chỉ\s+thị|công\s+văn|pháp\s+lệnh))?"
     r"(?:\s+(?:số\s*)?(?P<doc_number>\d{1,5}/(?:\d{4}|[A-ZĐ]{1,8})(?:/[A-ZĐ0-9-]{2,30})?))?",
-    re.I,
+    re.IGNORECASE,
 )
-_CLAUSE_IN_PREFIX_RE = re.compile(r"khoản\s+(\d+[a-zđ]?)", re.I)
-_POINT_IN_PREFIX_RE = re.compile(r"điểm\s+([a-zđ])", re.I)
+_CLAUSE_IN_PREFIX_RE = re.compile(r"khoản\s+(\d+[a-zđ]?)", re.IGNORECASE)
+_POINT_IN_PREFIX_RE = re.compile(r"điểm\s+([a-zđ])", re.IGNORECASE)
 _AMENDMENT_RE = re.compile(
     r"\b(sửa đổi|bổ sung|sửa đổi,\s*bổ sung|bãi bỏ|thay thế|hết hiệu lực)\b",
-    re.I,
+    re.IGNORECASE,
 )
 
 

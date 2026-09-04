@@ -1,61 +1,27 @@
 [build-system]
-requires = ["hatchling>=1.27,<2"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "dsc-tindiplapo"
+name = "uit-legalqa"
 version = "0.1.0"
-description = "Governed UIT DSC LegalIR and LegalQA competition baseline."
-readme = "README.md"
-requires-python = ">=3.12"
-license = { file = "LICENSE" }
-authors = [{ name = "TinDipLaPo" }]
-keywords = ["legal-information-retrieval", "legal-question-answering", "vietnamese", "dsc"]
-classifiers = [
-  "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3.12",
-]
-dependencies = []
+description = "Retrieval-first Vietnamese LegalQA pipeline for UIT DSC 2026"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26", "PyYAML>=6.0"]
+
+[project.optional-dependencies]
+retrieval = ["faiss-cpu>=1.8", "sentence-transformers>=5.4"]
+generation = ["accelerate>=0.33", "peft>=0.12", "torch>=2.2", "transformers>=4.41"]
+training = ["accelerate>=0.33", "bitsandbytes>=0.43", "peft>=0.12", "torch>=2.2", "transformers>=4.41"]
+eval = ["nltk>=3.9", "rouge-score>=0.1.2"]
+dev = ["pytest>=8.0"]
 
 [project.scripts]
-dsc = "text_retrieval_agent.cli:main"
-dsc-warmup = "text_retrieval_agent.warmup:main"
+legalqa = "legalqa.cli:main"
 
-[dependency-groups]
-dev = [
-  "mypy>=1.17,<2",
-  "pytest>=8.4,<9",
-  "pytest-cov>=6.2,<8",
-  "pyyaml>=6,<7",
-  "ruff>=0.12,<1",
-  "types-pyyaml>=6,<7",
-]
-
-[tool.hatch.build.targets.wheel]
-packages = [
-  "Source/Shared/text_retrieval_agent",
-  "Source/Task1/legal_ir",
-  "Source/Task2/legal_qa",
-  "Source/Task2/Offline",
-  "Source/Task2/Online",
-]
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.pytest.ini_options]
-addopts = "-q --strict-markers --disable-warnings --cov-fail-under=90"
 testpaths = ["tests"]
-
-[tool.ruff]
-line-length = 100
-target-version = "py312"
-
-[tool.ruff.lint]
-select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
-
-[tool.ruff.lint.isort]
-known-first-party = ["Offline", "Online", "legal_ir", "legal_qa", "text_retrieval_agent"]
-
-[tool.mypy]
-python_version = "3.12"
-strict = true
-files = ["Source", "tests"]
+pythonpath = ["src", "Source/Shared", "Source/Task1", "Source/Task2"]

@@ -1,0 +1,57 @@
+seed: 2026
+data:
+  data_dir: "LegalQA - Public Test"
+  train_file: train.json
+  test_file: public-official.json
+  contexts_zip: selected-contexts.zip
+  artifacts_dir: artifacts/gte_qwen_3.7b
+audit:
+  near_duplicate_enabled: true
+chunking:
+  legal_aware: true
+  max_chars: 1800
+  overlap_chars: 220
+retrieval:
+  bm25_enabled: true
+  dense_enabled: true
+  rrf_top_k: 50
+  rerank_enabled: true
+  rerank_top_k: 50
+complexity:
+  enabled: true
+  complexity_top_k: [3, 5, 8]
+  confidence_enabled: true
+expansion:
+  parent_enabled: true
+  graph_enabled: true
+evidence:
+  max_chars: 12000
+  parent_max_chars: 5000
+models:
+  parameter_limit_b: 4.0
+  dense:
+    name_or_path: Alibaba-NLP/gte-multilingual-base
+    parameters_b: 0.305
+    backend: sentence_transformers
+    enabled: true
+    local_files_only: true
+  reranker:
+    name_or_path: Alibaba-NLP/gte-multilingual-reranker-base
+    parameters_b: 0.305
+    backend: cross_encoder
+    enabled: true
+    local_files_only: true
+    max_length: 4096
+  generator:
+    name_or_path: Qwen/Qwen2.5-3B-Instruct
+    parameters_b: 3.09
+    backend: transformers
+    enabled: true
+    local_files_only: true
+diagnostic:
+  allow_training_use: false
+  manual_sample_size: 150
+generation:
+  max_new_tokens: 512
+  do_sample: false
+

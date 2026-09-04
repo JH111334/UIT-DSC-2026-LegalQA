@@ -1,0 +1,57 @@
+seed: 2026
+data:
+  data_dir: "LegalQA - Public Test"
+  train_file: train.json
+  test_file: public-official.json
+  contexts_zip: selected-contexts.zip
+  artifacts_dir: artifacts/corpus_v2
+sanitation: {enabled: true, version: corpus-v2.1}
+chunking: {legal_aware: true, max_chars: 1800, overlap_chars: 220, min_chars: 60, preamble_chars: 1400}
+retrieval:
+  bm25_enabled: true
+  dense_enabled: true
+  bm25_top_k: 100
+  dense_top_k: 100
+  rrf_top_k: 50
+  rrf_constant: 60
+  bm25_weight: 1.0
+  dense_weight: 1.0
+  legal_metadata_boost: 0.0
+  rerank_enabled: true
+  rerank_top_k: 30
+complexity: {enabled: false, complexity_top_k: [3, 5, 8], confidence_enabled: false}
+expansion: {parent_enabled: false, graph_enabled: false, graph_max_per_seed: 2, graph_decay: 0.72}
+evidence: {max_chars: 12000, max_per_document: 3, parent_max_chars: 5000, min_score_ratio: 0.35}
+models:
+  parameter_limit_b: 4.0
+  dense:
+    enabled: true
+    backend: sentence_transformers
+    name_or_path: intfloat/multilingual-e5-small
+    parameters_b: 0.118
+    local_files_only: true
+    batch_size: 32
+    max_length: 512
+    query_prefix: "query: "
+    document_prefix: "passage: "
+    device: ""
+  reranker:
+    enabled: true
+    backend: cross_encoder
+    name_or_path: cross-encoder/mmarco-mMiniLMv2-L12-H384-v1
+    parameters_b: 0.118
+    local_files_only: true
+    batch_size: 16
+    max_length: 512
+    device: ""
+  generator:
+    enabled: true
+    backend: qwen_vl_text
+    name_or_path: Qwen/Qwen2.5-VL-3B-Instruct
+    parameters_b: 3.09
+    local_files_only: true
+    batch_size: 1
+    max_length: 2048
+    device: ""
+diagnostic: {enabled: true, allow_training_use: false, manual_sample_size: 150, seed: 2026}
+generation: {max_new_tokens: 384, do_sample: false, temperature: 0.2, repetition_penalty: 1.05}

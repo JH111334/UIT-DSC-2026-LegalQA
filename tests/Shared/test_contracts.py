@@ -1,7 +1,6 @@
 """Test query and corpus contract rejection."""
 
 import pytest
-
 from text_retrieval_agent.contracts import ContractError, RetrievalQuery
 
 

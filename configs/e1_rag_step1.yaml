@@ -1,0 +1,49 @@
+seed: 2026
+data:
+  data_dir: "LegalQA - Public Test"
+  train_file: train.json
+  test_file: public-official.json
+  contexts_zip: selected-contexts.zip
+  artifacts_dir: Data/Task2/indexes/task2-data-v3-bm25-candidate/index
+  index_file: bm25.sqlite3
+  index_manifest_file: index_manifest.json
+sanitation: {enabled: true, version: task3-e1-v1}
+retrieval:
+  bm25_enabled: true
+  dense_enabled: false
+  bm25_top_k: 100
+  dense_top_k: 100
+  rrf_top_k: 50
+  rrf_constant: 60
+  bm25_weight: 1.0
+  dense_weight: 1.0
+  legal_metadata_boost: 0.12
+  rerank_enabled: false
+  rerank_top_k: 50
+complexity:
+  enabled: true
+  complexity_top_k: [3, 5, 8]
+  confidence_enabled: true
+expansion: {parent_enabled: true, graph_enabled: false}
+models:
+  parameter_limit_b: 4.0
+  dense: {enabled: false, backend: none}
+  reranker: {enabled: false, backend: lexical}
+  generator:
+    enabled: true
+    backend: transformers
+    name_or_path: Qwen/Qwen2.5-1.5B-Instruct
+    revision: 989aa7980e4cf806f80c7fef2b1adb7bc71aa306
+    adapter_path: models/e0-full-v1
+    parameters_b: 1.54
+    local_files_only: false
+    batch_size: 1
+    max_length: 2048
+diagnostic: {enabled: true, allow_training_use: false, manual_sample_size: 150, seed: 2026}
+generation:
+  max_new_tokens: 512
+  do_sample: false
+  temperature: 0.0
+  repetition_penalty: 1.20
+  no_repeat_ngram_size: 4
+training: {enabled: false, profile: e1-bm25}

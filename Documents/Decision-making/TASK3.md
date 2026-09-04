@@ -1,6 +1,6 @@
 # TASK3 — Kế hoạch Cải tiến Toàn diện Lần 3 và Chuyển dịch E0 sang E1 (RAG)
 
-- **Trạng thái**: PLANNING_ITERATION_3; ROADMAP_E1_RETRIEVAL_AUGMENTED.
+- **Trạng thái**: LOCAL_TECHNICAL_GATES_PASS; P4_BLOCKED_USER_GO_AND_E0_ADAPTER.
 - **Ngày lập**: 04-09-2026.
 - **Mục tiêu**: Nâng điểm từ baseline E0 (METEOR 0.22, ROUGE-L 0.32) lên nhóm dẫn đầu (0.50+ ở cả hai chỉ số).
 - **Hợp đồng bàn giao**: [BanGiao.md](BanGiao.md) (Cập nhật cho release 	ask2-data-v3).
@@ -22,15 +22,15 @@ Lần chạy thứ hai (E0 Kaggle v2-r1, Qwen2.5-1.5B-Instruct QLoRA, answer-onl
 
 ### 1.2. Taxonomy Lỗi từ 700 Cặp Kiểm Định và 1.000 Dự Đoán Public
 
-| Mã lỗi | Số lượng | Tỷ lệ | Phân tích bản chất kỹ thuật |
-|---|---|---|---|
-| TOKEN_REPETITION | 675 / 700 | **96.4%** | Vòng lặp suy thoái (degenerate loop): mô hình lặp lại một mệnh đề pháp lý hàng chục lần do tham số phạt lặp chưa kích hoạt (
-epetition_penalty = 1.0). |
-| REPEATED_4GRAM_REVIEW | 992 / 1.000 | **99.2%** | Trên tập Public, 99.2% câu trả lời xuất hiện 4-gram lặp lại liên tiếp, phá hủy độ mượt và ngữ pháp câu. |
-| MISSING_REFERENCE_NUMBER | 696 / 700 | **99.4%** | Thiếu hoàn toàn số điều luật trích dẫn chính xác (Điều X, Khoản Y, Nghị định Z) do mô hình 1.5B không thể nhớ thuộc lòng toàn bộ hệ thống văn bản quy phạm pháp luật khi không có truy xuất ngữ cảnh. |
-| EXTRA_OR_WRONG_NUMBER | 698 / 700 | **99.7%** | Ảo giác (hallucination): mô hình tự bịa số hiệu thông tư, nghị định không có thực trong bối cảnh câu hỏi. |
-| EXCESSIVE_VERBOSITY | 328 / 700 | **46.9%** | Câu trả lời dài quá mức cần thiết, chứa nhiều đoạn dẫn nhập sáo rỗng. |
-| ENDING_REVIEW | 767 / 1.000 | **76.7%** | Cạn kiệt ngân sách token: do lặp từ liên tục, 76.7% câu trả lời chạm trần max_new_tokens = 768 và bị ngắt cụt giữa câu, không có kết luận. |
+| Mã lỗi                    | Số lượng    | Tỷ lệ     | Phân tích bản chất kỹ thuật                                                                                                                                                                           |
+| ---------------------------| -------------| -----------| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| TOKEN_REPETITION          | 675 / 700   | **96.4%** | Vòng lặp suy thoái (degenerate loop): mô hình lặp lại một mệnh đề pháp lý hàng chục lần do tham số phạt lặp chưa kích hoạt (                                                                          |
+| epetition_penalty = 1.0). |             |           |                                                                                                                                                                                                       |
+| REPEATED_4GRAM_REVIEW     | 992 / 1.000 | **99.2%** | Trên tập Public, 99.2% câu trả lời xuất hiện 4-gram lặp lại liên tiếp, phá hủy độ mượt và ngữ pháp câu.                                                                                               |
+| MISSING_REFERENCE_NUMBER  | 696 / 700   | **99.4%** | Thiếu hoàn toàn số điều luật trích dẫn chính xác (Điều X, Khoản Y, Nghị định Z) do mô hình 1.5B không thể nhớ thuộc lòng toàn bộ hệ thống văn bản quy phạm pháp luật khi không có truy xuất ngữ cảnh. |
+| EXTRA_OR_WRONG_NUMBER     | 698 / 700   | **99.7%** | Ảo giác (hallucination): mô hình tự bịa số hiệu thông tư, nghị định không có thực trong bối cảnh câu hỏi.                                                                                             |
+| EXCESSIVE_VERBOSITY       | 328 / 700   | **46.9%** | Câu trả lời dài quá mức cần thiết, chứa nhiều đoạn dẫn nhập sáo rỗng.                                                                                                                                 |
+| ENDING_REVIEW             | 767 / 1.000 | **76.7%** | Cạn kiệt ngân sách token: do lặp từ liên tục, 76.7% câu trả lời chạm trần max_new_tokens = 768 và bị ngắt cụt giữa câu, không có kết luận.                                                            |
 
 ### 1.3. Phân Tích Phân Lớp (Slice Breakdown)
 - nswer_short (160 câu): METEOR **0.3239** — mô hình đạt điểm tương đối khi câu hỏi có phạm vi hẹp.
@@ -120,13 +120,13 @@ o_repeat_ngram_size = 4
 
 Để tiết kiệm quota GPU (30 giờ/tuần) và kiểm chứng chính xác tác động của từng can thiệp:
 
-| Bước | Tên thử nghiệm | Mục tiêu kiểm chứng | Môi trường | Chi phí compute |
-|---|---|---|---|---|
-| **C0** | *Decoding Check* | Đo lường mức giảm TOKEN_REPETITION trên 50 câu validation | Local CPU | 0 GPU |
-| **C1** | *BM25 Retrieval Check* | Đo lường Recall@5 của bộ truy xuất BM25 trên 700 câu validation | Local CPU | 0 GPU |
-| **Step 1** | *E0 Adapter + RAG + Decoding* | Nạp adapter cũ của E0, kết hợp ngữ cảnh BM25 và 
-epetition_penalty=1.20 trên 700 câu | Kaggle Batch | ~1.0 giờ GPU |
-| **Step 2** | *E1 Full SFT + Submission* | Huấn luyện adapter mới với dữ liệu có ngữ cảnh, sinh 1.000 câu Public, xuất zip nộp bài | Kaggle Batch | ~4.5 giờ GPU |
+| Bước                                | Tên thử nghiệm                | Mục tiêu kiểm chứng                                                                     | Môi trường   | Chi phí compute |
+| -------------------------------------| -------------------------------| -----------------------------------------------------------------------------------------| --------------| -----------------|
+| **C0**                              | *Decoding Check*              | Đo lường mức giảm TOKEN_REPETITION trên 50 câu validation                               | Local CPU    | 0 GPU           |
+| **C1**                              | *BM25 Retrieval Check*        | Đo lường Recall@5 của bộ truy xuất BM25 trên 700 câu validation                         | Local CPU    | 0 GPU           |
+| **Step 1**                          | *E0 Adapter + RAG + Decoding* | Nạp adapter cũ của E0, kết hợp ngữ cảnh BM25 và                                         |              |                 |
+| epetition_penalty=1.20 trên 700 câu | Kaggle Batch                  | ~1.0 giờ GPU                                                                            |              |                 |
+| **Step 2**                          | *E1 Full SFT + Submission*    | Huấn luyện adapter mới với dữ liệu có ngữ cảnh, sinh 1.000 câu Public, xuất zip nộp bài | Kaggle Batch | ~4.5 giờ GPU    |
 
 Nếu Step 1 đạt METEOR > 0.40 và ROUGE-L > 0.40, tiến hành Step 2 ngay để tối ưu hóa khả năng bám sát ngữ cảnh của mô hình.
 

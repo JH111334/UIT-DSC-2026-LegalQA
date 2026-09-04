@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 SCHEMA_VERSION = "task2-preprocess-request-v1"
-OPERATIONS = {"build", "preflight"}
+OPERATIONS = {"build", "build-index", "preflight"}
 PROFILES = {"e0-direct", "e1-bm25"}
 STAGES = {"training", "evaluation", "public", "promotion"}
 EXIT_INVALID = 2
@@ -31,7 +31,8 @@ def contract_payload() -> dict[str, Any]:
         "stages": sorted(STAGES),
         "boundaries": {
             "canonical_release": "QA, corpus, reports, and diagnostic qrels only",
-            "excluded": ["index", "model", "tokenizer control", "training", "inference"],
+            "candidate_index": "external run_root/index; Phase B acceptance remains required",
+            "excluded": ["model", "tokenizer control", "training", "inference"],
         },
     }
 
@@ -89,6 +90,50 @@ def run_request(path: Path) -> int:
             validation_size=int(payload.get("validation_size", 700)),
             progress=print,
         )
+    elif operation == "build-index":
+        if __package__:
+            from Online.RetrievingAnswer.bm25 import build_bm25_index
+
+            from .release_audit import validate_data_release
+        else:
+            sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+            from Online.RetrievingAnswer.bm25 import build_bm25_index
+
+            from Offline.release_audit import validate_data_release
+
+        preflight = validate_data_release(
+            release_root,
+            profile="e1-bm25",
+            stage="evaluation",
+        )
+        if preflight.get("status") != "PASS":
+            report = {
+                "schema_version": SCHEMA_VERSION,
+                "task_id": "Task2",
+                "status": "FAIL",
+                "operation": operation,
+                "release_preflight": preflight,
+            }
+        else:
+            index_run_root = _path(payload, "index_run_root", base)
+            index_manifest = build_bm25_index(
+                release_root,
+                index_run_root,
+                index_id=str(
+                    payload.get("index_id") or f"{release_root.name}-bm25-v1"
+                ),
+                manifest_status="CANDIDATE",
+            )
+            report = {
+                "schema_version": SCHEMA_VERSION,
+                "task_id": "Task2",
+                "status": "PASS",
+                "operation": operation,
+                "release_id": release_root.name,
+                "release_preflight": preflight,
+                "index_manifest": index_manifest,
+                "phase_b_acceptance_required": True,
+            }
     else:
         if __package__:
             from .release_audit import validate_data_release

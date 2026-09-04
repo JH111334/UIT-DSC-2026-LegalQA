@@ -4,7 +4,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from text_retrieval_agent.contracts import ContractError
 from text_retrieval_agent.warmup import (
     load_task1_warmup,

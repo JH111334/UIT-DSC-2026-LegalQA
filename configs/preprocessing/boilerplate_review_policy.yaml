@@ -1,0 +1,26 @@
+version: corpus-v2.1
+status: manually_reviewed
+
+# This file classifies high-DF candidates for audit. It never authorizes
+# line-level deletion; only boilerplate_blacklist.yaml can do that.
+header_fragments_keep:
+  - "hòa xã hội chủ nghĩa việt nam"
+  - "hoà xã hội chủ nghĩa việt nam"
+  - "hội chủ nghĩa việt nam"
+  - "cộng hòa xã hội chủ nghĩa"
+  - "độc lập – tự do – hạnh phúc"
+
+site_labels_keep_conservative:
+  - "file được đính kèm theo văn bản"
+
+patterns:
+  terminal_routing_candidate: "^-\\s+"
+  form_placeholder: "^[._…]+$"
+  form_signature: "^\\(ký(?:,| và| tên)"
+
+default_decision: keep_legal_or_ambiguous
+
+notes:
+  - "Routing candidates are removed only as part of a confidently detected terminal Nơi nhận block."
+  - "Form placeholders and signatures remain available to generation_text."
+  - "High document frequency alone never triggers deletion."

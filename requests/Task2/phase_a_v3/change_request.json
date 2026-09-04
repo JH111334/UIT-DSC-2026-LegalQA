@@ -1,0 +1,11 @@
+{
+  "schema_version": "task2-phase-a-change-request-v1",
+  "parent_release_id": "task2-data-v2",
+  "new_release_id": "task2-data-v3",
+  "one_main_data_change": "Bounded Task3 answer sanitation; metadata aliases are contract-only and do not alter retrieval text",
+  "hypothesis": "Removing reviewed media and trailing-related-question boilerplate improves training targets without deleting legal content",
+  "failure_targeted": "Reference answers contain media notes/trailing related questions and E1 chunks lack explicit article_id/clause_id aliases",
+  "config": "configs/Task2/preprocessing/release_v3.yaml",
+  "expected_artifact_delta": "answer_model changes only for bounded sanitation; answer_raw remains byte-preserved; chunk retrieval text/count remains controlled while alias fields are added",
+  "stop_condition": "Any sanitation residue, fewer than 10/10 preserved form samples, metadata alias mismatch, manifest hash mismatch, or failed E1 preflight"
+}

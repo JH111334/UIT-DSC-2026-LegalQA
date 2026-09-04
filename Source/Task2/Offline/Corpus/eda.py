@@ -60,7 +60,7 @@ def analyze_dataset(
                 [len((item.answer or "").split()) for item in train]
             ),
             "article_mentions": sum(
-                len(re.findall(r"\bđiều\s+\d+", item.answer or "", re.I)) for item in train
+                len(re.findall(r"\bđiều\s+\d+", item.answer or "", re.IGNORECASE)) for item in train
             ),
         },
         "test": {

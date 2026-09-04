@@ -3,7 +3,11 @@
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 
-from text_retrieval_agent.contracts import ChunkRecord, RetrievedChunk, RetrieverCandidate
+from text_retrieval_agent.contracts import (
+    ChunkRecord,
+    RetrievedChunk,
+    RetrieverCandidate,
+)
 
 
 def reciprocal_rank_fusion(

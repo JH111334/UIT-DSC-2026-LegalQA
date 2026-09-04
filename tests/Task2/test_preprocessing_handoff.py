@@ -11,14 +11,20 @@ PACKAGE_ROOT = ROOT / "Source" / "Task2"
 if str(PACKAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(PACKAGE_ROOT))
 
-from Offline.core.config import DataConfig, DiagnosticConfig, PipelineConfig  # noqa: E402
-from Offline.core.io import (  # noqa: E402
+from Offline.core.config import (
+    DataConfig,
+    DiagnosticConfig,
+    PipelineConfig,
+)
+from Offline.core.io import (
     context_source_count,
     context_source_sha256,
     iter_context_payloads,
 )
-from Offline.release_audit import validate_data_release  # noqa: E402
-from Offline.release_builder import build_data_release  # noqa: E402
+from Offline.Corpus.sanitation import sanitize_answer_raw
+from Offline.pipeline import run_request
+from Offline.release_audit import validate_data_release
+from Offline.release_builder import build_data_release
 
 
 def _write_json(path: Path, payload: object) -> None:
@@ -37,6 +43,19 @@ def test_context_directory_iteration_and_hash_are_deterministic(tmp_path: Path) 
     assert names == ["context_1.json", "context_2.json"]
     assert context_source_count(contexts) == 2
     assert context_source_sha256(contexts) == context_source_sha256(contexts)
+
+
+def test_task3_answer_sanitation_is_bounded() -> None:
+    """Remove reviewed tails without deleting legal text after an early image marker."""
+
+    leading = "Tiêu đề (Hình từ Internet)\nTheo Điều 1, nội dung vẫn hợp lệ."
+    trailing = "Theo Điều 1, nội dung hợp lệ.\n\nCâu hỏi liên đới? (Ảnh minh họa)"
+    ellipsis = "Nội dung chính. …… Câu hỏi tiếp theo?"
+
+    assert sanitize_answer_raw(leading) == "Tiêu đề\nTheo Điều 1, nội dung vẫn hợp lệ."
+    assert sanitize_answer_raw(trailing) == "Theo Điều 1, nội dung hợp lệ."
+    assert sanitize_answer_raw(ellipsis) == "Nội dung chính."
+    assert sanitize_answer_raw("Mẫu .......... giữ nguyên") == "Mẫu .......... giữ nguyên"
 
 
 def test_small_release_build_and_deep_audit(tmp_path: Path) -> None:
@@ -76,6 +95,10 @@ def test_small_release_build_and_deep_audit(tmp_path: Path) -> None:
 
     result = build_data_release(config, release, validation_size=1)
     report = json.loads((release / "corpus" / "corpus_report.json").read_text(encoding="utf-8"))
+    sanitation = json.loads((release / "qa" / "sanitation_report.json").read_text(encoding="utf-8"))
+    first_chunk = json.loads(
+        (release / "corpus" / "chunks.jsonl").read_text(encoding="utf-8").splitlines()[0]
+    )
     audit = validate_data_release(
         release,
         profile="e1-bm25",
@@ -86,7 +109,31 @@ def test_small_release_build_and_deep_audit(tmp_path: Path) -> None:
     assert report["chunk_count"] == sum(report["chunk_level_counts"].values())
     assert report["source_span_failures"] == 0
     assert report["chunk_token_stats"]["status"] == "NOT_RUN"
+    assert sanitation["status"] == "PASS"
+    assert {"doc_id", "article_id", "clause_id"} <= set(first_chunk)
     assert audit["status"] == "PASS"
+
+    request = tmp_path / "build-index.json"
+    index_root = tmp_path / "candidate-index"
+    index_report = tmp_path / "index-build-report.json"
+    _write_json(
+        request,
+        {
+            "schema_version": "task2-preprocess-request-v1",
+            "operation": "build-index",
+            "release_root": str(release),
+            "index_run_root": str(index_root),
+            "index_id": "task2-data-v1-bm25-v1",
+            "report": str(index_report),
+        },
+    )
+    assert run_request(request) == 0
+    index_manifest = json.loads(
+        (index_root / "index" / "index_manifest.json").read_text(encoding="utf-8")
+    )
+    assert index_manifest["status"] == "CANDIDATE"
+    assert index_manifest["release_id"] == "task2-data-v1"
+    assert index_manifest["sqlite_integrity_check"] == "ok"
 
 
 def test_release_identity_must_match_directory(tmp_path: Path) -> None:

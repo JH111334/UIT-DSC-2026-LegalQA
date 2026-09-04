@@ -17,24 +17,27 @@ PACKAGE_ROOT = ROOT / "Source" / "Task2"
 if str(PACKAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(PACKAGE_ROOT))
 
-from Online.evaluation import evaluate_run  # noqa: E402
-from Online.inventory import inventory_pipeline  # noqa: E402
-from Online.output_audit import audit_unlabeled_output  # noqa: E402
-from Online.request import PipelineRequest  # noqa: E402
-from Online.RetrievingAnswer.batch import AnswerResult, BatchInferenceRunner  # noqa: E402
-from Online.RetrievingAnswer.bm25 import (  # noqa: E402
+from Online.evaluation import evaluate_run
+from Online.inventory import inventory_pipeline
+from Online.output_audit import audit_unlabeled_output
+from Online.request import PipelineRequest
+from Online.RetrievingAnswer.batch import (
+    AnswerResult,
+    BatchInferenceRunner,
+)
+from Online.RetrievingAnswer.bm25 import (
     BM25Index,
     build_bm25_index,
     evaluate_bm25,
 )
-from Online.RetrievingAnswer.fusion import reciprocal_rank_fusion  # noqa: E402
-from Online.RetrievingAnswer.submission import (  # noqa: E402
+from Online.RetrievingAnswer.fusion import reciprocal_rank_fusion
+from Online.RetrievingAnswer.submission import (
     build_submission,
     package_submission,
     validate_predictions,
     validate_submission_zip,
 )
-from Online.Training.runtime import (  # noqa: E402
+from Online.Training.runtime import (
     configure_offline_transformers,
     encode_answer_only,
 )
@@ -269,8 +272,19 @@ def test_bm25_build_search_and_proxy_metrics(tmp_path: Path) -> None:
     chunks = release / "corpus" / "chunks.jsonl"
     _write_chunks(chunks)
     (release / "corpus" / "corpus_manifest.json").write_text("{}", encoding="utf-8")
-    manifest = build_bm25_index(release, run)
+    (release / "manifest.json").write_text(
+        json.dumps({"release_id": "task2-data-v3"}), encoding="utf-8"
+    )
+    manifest = build_bm25_index(
+        release,
+        run,
+        index_id="task2-data-v3-bm25-v1",
+        manifest_status="CANDIDATE",
+    )
     assert manifest["indexed_chunks"] == 2
+    assert manifest["status"] == "CANDIDATE"
+    assert manifest["release_id"] == "task2-data-v3"
+    assert manifest["sqlite_integrity_check"] == "ok"
     index = BM25Index(run / "index" / "bm25.sqlite3")
     assert index.search("Điều kiện kinh doanh bán lẻ rượu", limit=1)[0].chunk_id == "c1"
 

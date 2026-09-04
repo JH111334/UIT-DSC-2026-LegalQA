@@ -1,0 +1,12 @@
+data: {data_dir: "LegalQA - Public Test", artifacts_dir: artifacts/e6}
+audit: {near_duplicate_enabled: true}
+chunking: {legal_aware: true, max_chars: 1800, overlap_chars: 220}
+retrieval: {bm25_enabled: true, dense_enabled: true, rerank_enabled: true, rerank_top_k: 50, rrf_top_k: 50}
+complexity: {enabled: true, complexity_top_k: [3, 5, 8], confidence_enabled: true}
+expansion: {parent_enabled: true, graph_enabled: true, graph_max_per_seed: 2, graph_decay: 0.72}
+models:
+  dense: {name_or_path: Qwen/Qwen3-Embedding-0.6B, parameters_b: 0.6, backend: sentence_transformers, enabled: true, local_files_only: true}
+  reranker: {name_or_path: Qwen/Qwen3-Reranker-0.6B, parameters_b: 0.6, backend: cross_encoder, enabled: true, local_files_only: true}
+  generator: {enabled: false, backend: extractive}
+diagnostic: {allow_training_use: false}
+

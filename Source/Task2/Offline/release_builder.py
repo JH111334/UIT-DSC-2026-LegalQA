@@ -27,13 +27,17 @@ from .core.metadata import (
     extract_document_metadata,
 )
 from .core.normalize import normalize_text
-from .Corpus.sanitation import PAYWALL_RE
+from .Corpus.sanitation import (
+    PAYWALL_RE,
+    answer_sanitation_residue,
+    sanitize_answer_raw,
+)
 
 RELEASE_SCHEMA = "task2-data-release-v1"
 TASK_ID = "Task2"
-QA_TRANSFORM_VERSION = "task2-minimal-nfc-v1"
+QA_TRANSFORM_VERSION = "task2-answer-sanitation-v2"
 QA_SPLIT_VERSION = "task2-group-split-v1"
-CORPUS_TRANSFORM_VERSION = "task2-corpus-v1"
+CORPUS_TRANSFORM_VERSION = "task2-corpus-v2"
 PARSER_VERSION = "task2-legal-parser-v1"
 CITATION_PARSER_VERSION = "answer-citation-v1"
 CITATION_MATCHER_VERSION = "citation-corpus-match-v1"
@@ -55,15 +59,16 @@ _CHAPTER_RE = re.compile(r"(?im)^[ \t\u00a0]*(chương\s+[^\r\n]+)")
 _CLAUSE_RE = re.compile(r"(?im)^[ \t\u00a0]*(?P<number>\d+)[.)][ \t\u00a0]+")
 _POINT_RE = re.compile(r"(?im)^[ \t\u00a0]*(?P<number>[a-zđ])[.)][ \t\u00a0]+")
 _DOCUMENT_NUMBER_SURFACE_RE = re.compile(
-    r"\b\d{1,5}\s*/\s*(?:\d{4}|[A-ZĐ]{1,8})\s*/\s*[A-ZĐ0-9 -]{2,30}\b", re.I
+    r"\b\d{1,5}\s*/\s*(?:\d{4}|[A-ZĐ]{1,8})\s*/\s*[A-ZĐ0-9 -]{2,30}\b", re.IGNORECASE
 )
 _GROUP_DOCUMENT_RE = re.compile(
-    r"\b\d{1,5}\s*/\s*(?:\d{4}|[a-zđ]{1,8})\s*/\s*[a-zđ0-9 -]{2,30}\b", re.I
+    r"\b\d{1,5}\s*/\s*(?:\d{4}|[a-zđ]{1,8})\s*/\s*[a-zđ0-9 -]{2,30}\b", re.IGNORECASE
 )
 _GROUP_NUMBER_RE = re.compile(r"\b\d+(?:[.,]\d+)*\b")
-_GROUP_NON_WORD_RE = re.compile(r"[^0-9a-zà-ỹđ<>]+", re.I)
-_CONTEXT_ID_RE = re.compile(r"context_([^/\\]+)\.json$", re.I)
+_GROUP_NON_WORD_RE = re.compile(r"[^0-9a-zà-ỹđ<>]+", re.IGNORECASE)
+_CONTEXT_ID_RE = re.compile(r"context_([^/\\]+)\.json$", re.IGNORECASE)
 _RELEASE_ID_RE = re.compile(r"task2-data-v\d+")
+_FORM_PLACEHOLDER_RE = re.compile(r"\.{7,}")
 
 
 def _validated_release_id(release_root: Path, release_id: str | None = None) -> str:
@@ -201,13 +206,20 @@ def build_qa_release(
     model_answer_newlines = 0
     empty_questions = 0
     empty_answers = 0
+    sanitized_answers = 0
+    sanitation_media_residue = 0
+    sanitation_related_residue = 0
     exact_questions: dict[str, list[str]] = defaultdict(list)
     near_groups: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for question_id, value in raw_train.items():
         question_raw = "" if value.get("question") is None else str(value["question"])
         answer_raw = "" if value.get("answer") is None else str(value["answer"])
         question_model = _minimal_text(question_raw, preserve_newlines=False)
-        answer_model = _minimal_text(answer_raw, preserve_newlines=True)
+        answer_model = _minimal_text(sanitize_answer_raw(answer_raw), preserve_newlines=True)
+        sanitized_answers += int(answer_model != _minimal_text(answer_raw, preserve_newlines=True))
+        residue = answer_sanitation_residue(answer_model)
+        sanitation_media_residue += int(residue["media_note"])
+        sanitation_related_residue += int(residue["related_question_ellipsis"])
         group = _question_group_id(question_model)
         record = {
             "question_id": question_id,
@@ -252,6 +264,42 @@ def build_qa_release(
             }
         )
     write_jsonl(qa_dir / "public.jsonl", public_records)
+
+    sample_rng = random.Random(config.seed)
+    sample_pool = sorted(all_records, key=lambda record: str(record["question_id"]))
+    sanitation_samples = sample_rng.sample(sample_pool, min(20, len(sample_pool)))
+    sanitation_report = {
+        "schema_version": RELEASE_SCHEMA,
+        "task_id": TASK_ID,
+        "release_id": release_id,
+        "status": (
+            "PASS"
+            if sanitation_media_residue == sanitation_related_residue == 0
+            else "FAIL"
+        ),
+        "transform_version": QA_TRANSFORM_VERSION,
+        "records_checked": len(all_records),
+        "records_changed": sanitized_answers,
+        "media_note_occurrences_after": sanitation_media_residue,
+        "related_question_ellipsis_after": sanitation_related_residue,
+        "sample_seed": config.seed,
+        "sample_size": len(sanitation_samples),
+        "samples": [
+            {
+                "question_id": record["question_id"],
+                "changed": _minimal_text(record["answer_raw"], preserve_newlines=True)
+                != record["answer_model"],
+                "answer_raw_sha256": sha256_bytes(str(record["answer_raw"]).encode("utf-8")),
+                "answer_model_sha256": sha256_bytes(
+                    str(record["answer_model"]).encode("utf-8")
+                ),
+                "before_tail": str(record["answer_raw"])[-500:],
+                "after_tail": str(record["answer_model"])[-500:],
+            }
+            for record in sanitation_samples
+        ],
+    }
+    write_json(qa_dir / "sanitation_report.json", sanitation_report)
 
     train_ids = [value["question_id"] for value in training]
     validation_ids = [value["question_id"] for value in validation]
@@ -319,7 +367,12 @@ def build_qa_release(
         "task_id": TASK_ID,
         "release_id": release_id,
         "status": "PASS"
-        if not (empty_questions or empty_answers or public_label_usage)
+        if not (
+            empty_questions
+            or empty_answers
+            or public_label_usage
+            or sanitation_report["status"] != "PASS"
+        )
         else "FAIL",
         "raw_counts": {"train": len(raw_train), "public": len(raw_public)},
         "processed_counts": {
@@ -342,9 +395,16 @@ def build_qa_release(
             "near_template_groups": len(suspicious_pairs),
         },
         "normalization": {
-            "method": "Unicode NFC, CRLF/CR to LF, outer trim; question whitespace collapsed",
+            "method": (
+                "Unicode NFC, CRLF/CR to LF, horizontal whitespace normalization; "
+                "reviewed trailing media/related-question boilerplate removed from answer_model"
+            ),
             "question_records_changed": nfc_question_changes,
             "answer_records_changed": nfc_answer_changes,
+            "answer_records_sanitized": sanitized_answers,
+            "answer_raw_preserved": True,
+            "media_note_occurrences_after": sanitation_media_residue,
+            "related_question_ellipsis_after": sanitation_related_residue,
         },
         "newline_preservation": {
             "raw_newlines": raw_answer_newlines,
@@ -608,6 +668,10 @@ def _iter_canonical_chunks(
             yield {
                 "chunk_id": f"{base_id}_w{window_index}",
                 "doc_id": doc_id,
+                "article_id": parent_id if article else None,
+                "clause_id": (
+                    f"{parent_id}_clause_{_safe_id(clause)}" if clause else None
+                ),
                 "source_task": TASK_ID,
                 "parent_chunk_id": parent_id,
                 "doc_type": doc_type,
@@ -737,6 +801,7 @@ def build_corpus_release(
     summaries: dict[str, dict[str, Any]] = {}
     fingerprint_groups: dict[str, list[str]] = defaultdict(list)
     invalid_member_names: list[str] = []
+    form_candidates: dict[str, int] = {}
 
     for index, (member_name, payload) in enumerate(iter_context_payloads(source_contexts), start=1):
         json_valid = True
@@ -761,6 +826,9 @@ def build_corpus_release(
         }
         inventory.append(inventory_record)
         passage = str((value or {}).get("passage") or "")
+        form_occurrences = len(_FORM_PLACEHOLDER_RE.findall(passage))
+        if json_valid and passage.strip() and form_occurrences and not PAYWALL_RE.search(passage):
+            form_candidates[doc_id] = form_occurrences
         fingerprint = _passage_fingerprint(passage) if passage.strip() else ""
         if fingerprint:
             fingerprint_groups[fingerprint].append(doc_id)
@@ -782,6 +850,20 @@ def build_corpus_release(
         primary = ids[0]
         for alias in ids[1:]:
             alias_to_primary[alias] = primary
+    eligible_form_ids = sorted(set(form_candidates) - set(alias_to_primary))
+    form_rng = random.Random(config.seed)
+    selected_form_ids = set(
+        form_rng.sample(eligible_form_ids, min(10, len(eligible_form_ids)))
+    )
+    form_samples: dict[str, dict[str, Any]] = {
+        doc_id: {
+            "doc_id": doc_id,
+            "raw_placeholder_occurrences": form_candidates[doc_id],
+            "placeholder_seen_in_chunk": False,
+            "raw_document_preserved": False,
+        }
+        for doc_id in selected_form_ids
+    }
 
     document_path = corpus_dir / "documents.jsonl"
     chunk_path = corpus_dir / "chunks.jsonl"
@@ -811,6 +893,8 @@ def build_corpus_release(
     duplicate_retrieval_fingerprints: set[str] = set()
     duplicate_searchable_chunks = 0
     indexable_chunks = 0
+    chunks_with_article_id = 0
+    chunks_with_clause_id = 0
     document_status_counts: Counter[str] = Counter()
     quarantine_reason_counts: Counter[str] = Counter()
     article_index: dict[tuple[str, str], list[str]] = defaultdict(list)
@@ -896,6 +980,10 @@ def build_corpus_release(
                 json.dumps(document_record, ensure_ascii=False, separators=(",", ":")) + "\n"
             )
             document_count += 1
+            if doc_id in form_samples:
+                form_samples[doc_id]["raw_document_preserved"] = (
+                    document_record["passage_raw"] == passage
+                )
             document_status_counts[status] += 1
             if not indexable:
                 quarantine_record = {
@@ -940,6 +1028,12 @@ def build_corpus_release(
                     chunk_levels[level] += 1
                     chunk_structure_counts[_chunk_structure_bucket(level)] += 1
                     indexable_chunks += int(bool(chunk["indexable"]))
+                    chunks_with_article_id += int(chunk["article_id"] is not None)
+                    chunks_with_clause_id += int(chunk["clause_id"] is not None)
+                    if doc_id in form_samples and _FORM_PLACEHOLDER_RE.search(
+                        str(chunk["raw_text"])
+                    ):
+                        form_samples[doc_id]["placeholder_seen_in_chunk"] = True
                     retrieval_text = str(chunk["retrieval_text"])
                     empty_retrieval_text += int(not retrieval_text.strip())
                     retrieval_fingerprint = sha256_bytes(retrieval_text.encode("utf-8"))
@@ -983,6 +1077,36 @@ def build_corpus_release(
     for record in sorted(inventory, key=lambda value: value["relative_path"]):
         inventory_digest.update(_stable_json_bytes(record))
         inventory_digest.update(b"\n")
+    form_sample_records = []
+    for doc_id in sorted(form_samples):
+        record = dict(form_samples[doc_id])
+        record["preserved"] = bool(
+            record["raw_document_preserved"]
+            and record["placeholder_seen_in_chunk"]
+        )
+        form_sample_records.append(record)
+    form_placeholder_audit = {
+        "schema_version": RELEASE_SCHEMA,
+        "task_id": TASK_ID,
+        "release_id": release_id,
+        "status": (
+            "PASS"
+            if len(form_sample_records) == min(10, len(eligible_form_ids))
+            and all(record["preserved"] for record in form_sample_records)
+            else "FAIL"
+        ),
+        "sample_seed": config.seed,
+        "eligible_documents": len(eligible_form_ids),
+        "required_sample_size": min(10, len(eligible_form_ids)),
+        "sample_size": len(form_sample_records),
+        "samples_preserved": sum(record["preserved"] for record in form_sample_records),
+        "preservation_basis": (
+            "passage_raw is byte-for-byte unchanged and at least one literal seven-dot "
+            "placeholder remains in an emitted raw chunk"
+        ),
+        "samples": form_sample_records,
+    }
+    write_json(corpus_dir / "form_placeholder_audit.json", form_placeholder_audit)
     corpus_file_sizes = {
         path.name: path.stat().st_size
         for path in (
@@ -990,6 +1114,7 @@ def build_corpus_release(
             document_path,
             chunk_path,
             quarantine_path,
+            corpus_dir / "form_placeholder_audit.json",
         )
     }
     corpus_integrity_ok = all(
@@ -1001,6 +1126,7 @@ def build_corpus_release(
             orphan_parent_references == 0,
             empty_retrieval_text == 0,
             source_offset_round_trip_failures == 0,
+            form_placeholder_audit["status"] == "PASS",
         )
     )
     corpus_report = {
@@ -1026,6 +1152,17 @@ def build_corpus_release(
         "chunk_count": chunk_count,
         "chunks_total": chunk_count,
         "chunks_indexable": indexable_chunks,
+        "chunk_metadata_contract": {
+            "doc_id_records": chunk_count,
+            "article_id_records": chunks_with_article_id,
+            "clause_id_records": chunks_with_clause_id,
+            "missing_required_alias_fields": 0,
+        },
+        "form_placeholder_audit": {
+            "status": form_placeholder_audit["status"],
+            "sample_size": form_placeholder_audit["sample_size"],
+            "samples_preserved": form_placeholder_audit["samples_preserved"],
+        },
         "chunk_structure_counts": dict(sorted(chunk_structure_counts.items())),
         "chunk_structure_basis": {
             key: sorted(value) for key, value in _CHUNK_STRUCTURE_LEVELS.items()
@@ -1073,6 +1210,7 @@ def build_corpus_release(
         "documents.jsonl",
         "chunks.jsonl",
         "quarantine.jsonl",
+        "form_placeholder_audit.json",
         "corpus_report.json",
     ):
         path = corpus_dir / name

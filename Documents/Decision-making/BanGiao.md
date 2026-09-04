@@ -97,6 +97,7 @@ Public/Private giữ cùng lineage nhưng không có answer fields.
 
 ```text
 chunk_id, doc_id, source_task, parent_chunk_id,
+article_id, clause_id,
 doc_type, doc_number_surface, doc_number_canonical,
 chapter, article, clause, point,
 raw_text, canonical_text, retrieval_text, parent_text,
@@ -212,6 +213,10 @@ Ví dụ schema đúng với code hiện tại:
   "report": "../../../Data/Task2/preflight/task2-data-v2/build_report.json"
 }
 ```
+
+Với release E1, Phase A có thể dùng thêm `operation=build-index` trong cùng schema để tạo
+candidate index ngoài release. Request phải có `index_run_root`; operation luôn chạy deep
+`e1-bm25/evaluation` preflight trước, ghi `status=CANDIDATE` và không thay thế Phase B acceptance.
 
 Mọi path tương đối được resolve cạnh file request. Tên config/version phải được đổi nếu
 logic transform thay đổi; ví dụ trên chỉ minh họa schema, không cho phép giả danh v1 logic

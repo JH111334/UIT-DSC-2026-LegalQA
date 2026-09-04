@@ -1,0 +1,48 @@
+seed: 2026
+
+data:
+  data_dir: "LegalQA - Public Test"
+  train_file: train.json
+  test_file: public-official.json
+  contexts_path: selected-contexts
+  artifacts_dir: Data/Task2/work/task2-data-v3
+
+audit:
+  very_long_chars: 200000
+  extreme_chars: 1000000
+  min_structure_density_per_10k: 0.25
+  near_duplicate_enabled: true
+  near_duplicate_threshold: 0.94
+  near_duplicate_num_perm: 64
+
+sanitation:
+  enabled: true
+  version: task2-data-v3
+  blacklist_path: configs/Task2/preprocessing/boilerplate_blacklist.yaml
+  protected_patterns_path: configs/Task2/preprocessing/protected_patterns.yaml
+  review_policy_path: configs/Task2/preprocessing/boilerplate_review_policy.yaml
+  terminal_noi_nhan_min_ratio: 0.85
+  block_min_chars: 100
+  overlap_min_tokens: 12
+  overlap_max_tokens: 50000
+  remove_retrieval_boilerplate: true
+  recover_paywall_documents: true
+  df_line_min_chars: 20
+  df_line_max_chars: 500
+  df_min_ratio: 0.01
+  df_max_candidates: 500
+  local_repetition_flag_ratio: 0.20
+  local_max_tf_flag: 5
+
+chunking:
+  legal_aware: true
+  max_chars: 1800
+  overlap_chars: 220
+  min_chars: 60
+  preamble_chars: 1400
+
+diagnostic:
+  enabled: true
+  allow_training_use: false
+  manual_sample_size: 150
+  seed: 2026

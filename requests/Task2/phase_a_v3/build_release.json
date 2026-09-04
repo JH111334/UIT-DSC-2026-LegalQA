@@ -1,0 +1,9 @@
+{
+  "schema_version": "task2-preprocess-request-v1",
+  "operation": "build",
+  "config": "../../../configs/Task2/preprocessing/release_v3.yaml",
+  "release_id": "task2-data-v3",
+  "release_root": "../../../Data/Task2/releases/task2-data-v3",
+  "validation_size": 700,
+  "report": "../../../Data/Task2/preflight/task2-data-v3/build_report.json"
+}
